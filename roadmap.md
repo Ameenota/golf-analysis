@@ -103,7 +103,7 @@ Calculate static TORSO_SCALE from the Address frames and divide all coordinates 
 
 Objective: Clean the GolfDB metadata, run Day 1's code on the videos, and engineer the "sliding window" features to give XGBoost temporal context.
 
-File Workflow: Prototype the parsing and pandas logic in notebooks/data_exploration.ipynb. Once the CSV looks right, copy the code into src/dataset_builder.py.
+File Workflow: Prototype the parsing and pandas logic in notebooks/data_pipeline_exploration.ipynb. Once the CSV looks right, copy the sliding window feature engineering code into src/feature_engineer.py.
 
 Inputs: GolfDB annotations (GolfDB.mat) and downloaded raw .mp4 videos in data/raw_videos/.
 
@@ -119,7 +119,7 @@ Labeling: Assign $1-8$ to the exact milestone frames, and $0$ to all other trans
 
 👀 Visual Demo Step: Open the generated CSV in Excel/Pandas. Look at a "Top of Backswing" row and verify you see the Y-coordinates of the wrist rising in the $T-5$ columns and falling in the $T+5$ columns.
 
-🤖 Antigravity Prompt: "In our notebook, write code to parse the GolfDB mat file and map the 8 key swing events to local videos. For every video, run our Day 1 functions. Grouping by video_id, create 'sliding window' features for the wrists, elbows, shoulders, and hips: for each row T, append the coordinates from T-5 and T+5 as new columns. Append a label column: 1-8 for the milestone frames, and 0 for transition frames. Output a clean master_training_dataset.csv. Once verified, save this logic to src/dataset_builder.py."
+🤖 Antigravity Prompt: "In our notebook, write code to parse the GolfDB mat file and map the 8 key swing events to local videos. For every video, run our Day 1 functions. Grouping by video_id, create 'sliding window' features for the wrists, elbows, shoulders, and hips: for each row T, append the coordinates from T-5 and T+5 as new columns. Append a label column: 1-8 for the milestone frames, and 0 for transition frames. Output a clean master_training_dataset.csv. Once verified, save the sliding window logic to src/feature_engineer.py."
 
 🧠 Day 3: XGBoost Classifier Training
 

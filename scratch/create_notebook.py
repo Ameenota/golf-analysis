@@ -1,0 +1,359 @@
+import json
+import os
+
+notebook_content = {
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Golf Swing Data Pipeline & Feature Engineering Exploration\n",
+    "\n",
+    "This notebook prototypes the parsing of the GolfDB dataset annotations (`golfDB.mat`), maps the 8 key swing events to relative frames in the local video files, runs the coordinate extraction pipeline, and engineers the **sliding window** temporal features for high-movement joints.\n",
+    "\n",
+    "## Objectives:\n",
+    "1. Parse annotations from `data/golfDB.mat`.\n",
+    "2. Batch process golf swing videos using the Day 1 `GolfVideoProcessor`.\n",
+    "3. Apply a sliding window of $\\pm 5$ frames for wrists, elbows, shoulders, and hips coordinates.\n",
+    "4. Label frames: exact milestone frames mapped to `1-8`, transitional frames to `0`.\n",
+    "5. Verify coordinate changes around the **Top of Backswing** milestone.\n",
+    "6. Create a visual display helper for Jupyter to inspect any row in the dataset."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import sys\n",
+    "import scipy.io\n",
+    "import cv2\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "from PIL import Image\n",
+    "from IPython.display import display\n",
+    "\n",
+    "# Add project root to sys.path\n",
+    "PROJECT_ROOT = '/Users/sagar/Documents/ML/golf-analysis'\n",
+    "if PROJECT_ROOT not in sys.path:\n",
+    "    sys.path.append(PROJECT_ROOT)\n",
+    "\n",
+    "from src.data_processor import GolfVideoProcessor\n",
+    "from src.visualizer import draw_skeleton\n",
+    "from src.feature_engineer import engineer_sliding_window, HIGH_MOVEMENT_JOINTS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 1: Parse the GolfDB Mat File\n",
+    "\n",
+    "We load `data/golfDB.mat` using `scipy.io.loadmat` and construct a mapping of `video_id` to its 8 milestone indices. Since the `.mat` file contains absolute frame numbers relative to the original YouTube videos, we subtract the start frame (`events[0]`) to make them relative to our trimmed local videos."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "mat_path = os.path.join(PROJECT_ROOT, 'data/golfDB.mat')\n",
+    "\n",
+    "def parse_golfdb_mat(mat_path):\n",
+    "    mat_data = scipy.io.loadmat(mat_path)\n",
+    "    db = mat_data['golfDB'][0]\n",
+    "    \n",
+    "    metadata = []\n",
+    "    for i in range(len(db)):\n",
+    "        rec = db[i]\n",
+    "        vid_id = int(rec['id'][0][0])\n",
+    "        events = rec['events'][0]\n",
+    "        \n",
+    "        # Calculate relative event indices\n",
+    "        start_frame = events[0]\n",
+    "        rel_events = events - start_frame\n",
+    "        milestones = rel_events[1:9]\n",
+    "        \n",
+    "        # Extract additional metadata fields\n",
+    "        player = str(rec['player'][0]) if len(rec['player']) > 0 else ''\n",
+    "        sex = str(rec['sex'][0]) if len(rec['sex']) > 0 else ''\n",
+    "        club = str(rec['club'][0]) if len(rec['club']) > 0 else ''\n",
+    "        view = str(rec['view'][0]) if len(rec['view']) > 0 else ''\n",
+    "        slow = int(rec['slow'][0][0]) if len(rec['slow']) > 0 else 0\n",
+    "        bbox = rec['bbox'][0].tolist() if len(rec['bbox']) > 0 else []\n",
+    "        \n",
+    "        metadata.append({\n",
+    "            'video_id': vid_id,\n",
+    "            'player': player,\n",
+    "            'sex': sex,\n",
+    "            'club': club,\n",
+    "            'view': view,\n",
+    "            'slow': slow,\n",
+    "            'start_frame': start_frame,\n",
+    "            'end_frame': events[9],\n",
+    "            'bbox': bbox,\n",
+    "            'milestones': milestones.tolist()\n",
+    "        })\n",
+    "        \n",
+    "    return pd.DataFrame(metadata)\n",
+    "\n",
+    "df_meta = parse_golfdb_mat(mat_path)\n",
+    "print(f'Loaded metadata for {len(df_meta)} videos.')\n",
+    "df_meta.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 2: Batch Process Video Landmarks\n",
+    "\n",
+    "We loop through a subset of local videos (configured by `NUM_VIDEOS_TO_PROCESS`), process each video using `GolfVideoProcessor`, and stack the resulting DataFrames. This returns raw, smoothed, and normalized landmark coordinate streams."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# NUM_VIDEOS_TO_PROCESS is configurable. Use 10 for testing/prototyping.\n",
+    "# Set to None (or len(df_meta)) to process the entire dataset.\n",
+    "NUM_VIDEOS_TO_PROCESS = 10\n",
+    "VIDEO_DIR = os.path.join(PROJECT_ROOT, 'data/videos_160/videos_160')\n",
+    "\n",
+    "processed_dfs = []\n",
+    "\n",
+    "print(f'Starting processing for first {NUM_VIDEOS_TO_PROCESS} videos...')\n",
+    "for i in range(NUM_VIDEOS_TO_PROCESS):\n",
+    "    video_id = df_meta.loc[i, 'video_id']\n",
+    "    video_path = os.path.join(VIDEO_DIR, f'{video_id}.mp4')\n",
+    "    \n",
+    "    if not os.path.exists(video_path):\n",
+    "        print(f'Warning: Video file not found: {video_path}')\n",
+    "        continue\n",
+    "        \n",
+    "    print(f'Processing video {video_id} ({i+1}/{NUM_VIDEOS_TO_PROCESS})...')\n",
+    "    try:\n",
+    "        processor = GolfVideoProcessor()\n",
+    "        df_vid = processor.process_video(video_path, video_id=video_id)\n",
+    "        processed_dfs.append(df_vid)\n",
+    "        processor.close()\n",
+    "    except Exception as e:\n",
+    "        print(f'Error processing video {video_id}: {e}')\n",
+    "\n",
+    "# Concatenate all processed videos\n",
+    "df_raw_features = pd.concat(processed_dfs, ignore_index=True)\n",
+    "print(f'Combined features shape: {df_raw_features.shape}')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 3: Engineer Sliding Window Features\n",
+    "\n",
+    "For each frame $T$, we append the coordinates from $T-5$ and $T+5$ as new columns. We group by `video_id` during shift operations to prevent temporal bleed across different videos. \n",
+    "\n",
+    "Boundary frames ($T < 5$ or $T > N - 6$) are padded using backfill and forward-fill within their respective video groups to keep columns free of `NaN` values without losing milestone rows near boundaries."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df_windowed = engineer_sliding_window(df_raw_features, HIGH_MOVEMENT_JOINTS)\n",
+    "print(f'Windowed features shape: {df_windowed.shape}')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 4: Label Frames\n",
+    "\n",
+    "We assign labels `1-8` to the exact milestone frames matching the metadata indices, and `0` to all other transitional frames."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def assign_labels(df, df_meta):\n",
+    "    df_labeled = df.copy()\n",
+    "    \n",
+    "    # Create mapping of video_id to its milestone list\n",
+    "    meta_dict = df_meta.set_index('video_id')['milestones'].to_dict()\n",
+    "    \n",
+    "    # Initialize label column to 0\n",
+    "    df_labeled['label'] = 0\n",
+    "    \n",
+    "    # Iterate through groups and assign labels\n",
+    "    for vid_id, group in df_labeled.groupby('video_id'):\n",
+    "        if vid_id not in meta_dict:\n",
+    "            continue\n",
+    "        milestones = meta_dict[vid_id]\n",
+    "        \n",
+    "        # Assign labels 1-8 to the milestone frame indices\n",
+    "        for milestone_idx, frame_idx in enumerate(milestones):\n",
+    "            label_val = milestone_idx + 1\n",
+    "            \n",
+    "            # Match the exact frame in the video\n",
+    "            mask = (df_labeled['video_id'] == vid_id) & (df_labeled['frame_index'] == frame_idx)\n",
+    "            df_labeled.loc[mask, 'label'] = label_val\n",
+    "            \n",
+    "    # Merge video-level metadata columns into the frame-level DataFrame\n",
+    "    metadata_cols = ['video_id', 'player', 'sex', 'club', 'view', 'slow']\n",
+    "    df_labeled = df_labeled.merge(df_meta[metadata_cols], on='video_id', how='left')\n",
+    "            \n",
+    "    return df_labeled\n",
+    "\n",
+    "df_final = assign_labels(df_windowed, df_meta)\n",
+    "print('Label distribution:')\n",
+    "print(df_final['label'].value_counts())"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 5: Save Master Dataset"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "processed_dir = os.path.join(PROJECT_ROOT, 'data/processed')\n",
+    "os.makedirs(processed_dir, exist_ok=True)\n",
+    "master_csv_path = os.path.join(processed_dir, 'master_training_dataset.csv')\n",
+    "\n",
+    "df_final.to_csv(master_csv_path, index=False)\n",
+    "print(f'Master training dataset saved to {master_csv_path}')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 6: Visual & Biomechanical Verification\n",
+    "\n",
+    "Let's check the wrist coordinates around the **Top of Backswing** (label 4).\n",
+    "\n",
+    "**MediaPipe Coordinate System Notes**:\n",
+    "- Y increases downwards. Therefore, a higher joint position on-screen has a **smaller Y coordinate** value.\n",
+    "- At the Top of Backswing ($T$), the wrist is at its peak elevation (minimum Y coordinate value).\n",
+    "- In the backswing ($T-5$) and downswing ($T+5$), the wrist should be physically lower (larger Y coordinate values).\n",
+    "\n",
+    "Let's print the actual values to verify this physical relationship."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Filter for Top of Backswing rows\n",
+    "top_rows = df_final[df_final['label'] == 4]\n",
+    "\n",
+    "print('Verifying \"Top of Backswing\" (label = 4) wrist coordinates:\\n')\n",
+    "for idx, row in top_rows.head(5).iterrows():\n",
+    "    vid_id = row['video_id']\n",
+    "    frame_idx = row['frame_index']\n",
+    "    \n",
+    "    y_t = row['norm_right_wrist_y']\n",
+    "    y_prev = row['norm_right_wrist_y_t-5']\n",
+    "    y_next = row['norm_right_wrist_y_t+5']\n",
+    "    \n",
+    "    is_valid = (y_prev > y_t) and (y_next > y_t)\n",
+    "    \n",
+    "    print(f'Video {vid_id}, Frame {frame_idx}:')\n",
+    "    print(f'  Right Wrist Y (T-5): {y_prev: .4f}')\n",
+    "    print(f'  Right Wrist Y (T):   {y_t: .4f}')\n",
+    "    print(f'  Right Wrist Y (T+5): {y_next: .4f}')\n",
+    "    print(f'  Wrist position lower at T-5 and T+5 (Y_t-5 > Y_t and Y_t+5 > Y_t)? {is_valid}\\n')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Step 7: Notebook Frame Display Function\n",
+    "\n",
+    "Here we define `show_frame_with_milestone(row)` using our shared `draw_skeleton` visualization utility to view processed skeleton overlays directly in the notebook."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": None,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def show_frame_with_milestone(row, video_dir=VIDEO_DIR):\n",
+    "    video_id = int(row['video_id'])\n",
+    "    frame_idx = int(row['frame_index'])\n",
+    "    label = int(row['label'])\n",
+    "    \n",
+    "    video_path = os.path.join(video_dir, f'{video_id}.mp4')\n",
+    "    \n",
+    "    cap = cv2.VideoCapture(video_path)\n",
+    "    cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)\n",
+    "    ret, frame = cap.read()\n",
+    "    cap.release()\n",
+    "    \n",
+    "    if not ret:\n",
+    "        print(f'Failed to read frame {frame_idx} from {video_path}')\n",
+    "        return\n",
+    "        \n",
+    "    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)\n",
+    "    \n",
+    "    # Draw skeleton overlay using the imported shared draw_skeleton\n",
+    "    draw_skeleton(frame_rgb, row, prefix='smooth_', line_color=(0, 255, 0), joint_color=(255, 0, 0))\n",
+    "    \n",
+    "    event_names = {\n",
+    "        0: 'Transition',\n",
+    "        1: 'Address',\n",
+    "        2: 'Toe-up (Backswing)',\n",
+    "        3: 'Mid-backswing',\n",
+    "        4: 'Top of Backswing',\n",
+    "        5: 'Mid-downswing',\n",
+    "        6: 'Impact',\n",
+    "        7: 'Mid-follow-through',\n",
+    "        8: 'Finish'\n",
+    "    }\n",
+    "    \n",
+    "    label_text = f'Video {video_id} | Frame {frame_idx} - {event_names.get(label, \"Unknown\")}'\n",
+    "    \n",
+    "    # Draw text background and text\n",
+    "    cv2.rectangle(frame_rgb, (10, 10), (320, 45), (0, 0, 0), -1)\n",
+    "    cv2.putText(frame_rgb, label_text, (15, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)\n",
+    "    \n",
+    "    img = Image.fromarray(frame_rgb)\n",
+    "    display(img)\n",
+    "\n",
+    "# Find a top of backswing frame and show it\n",
+    "top_row = df_final[df_final['label'] == 4].iloc[0]\n",
+    "show_frame_with_milestone(top_row)"
+   ]
+  }
+ ],
+ "metadata": {},
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+
+os.makedirs('/Users/sagar/Documents/ML/golf-analysis/notebooks', exist_ok=True)
+with open('/Users/sagar/Documents/ML/golf-analysis/notebooks/data_pipeline_exploration.ipynb', 'w') as f:
+    json.dump(notebook_content, f, indent=1)
+
+print('Notebook created successfully.')
