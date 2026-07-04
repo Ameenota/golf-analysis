@@ -1,0 +1,17 @@
+{
+    "agent_profile": "developer",
+    "security": {
+        "allow_terminal_commands": true,
+        "require_confirmation_for": [
+            "rm -rf",
+            "docker compose down",
+            "drop table"
+        ]
+    },
+    "indexing": {
+        "exclude": [
+            "**/node_modules/**",
+            "**/.venv/**"
+        ]
+    }
+}
