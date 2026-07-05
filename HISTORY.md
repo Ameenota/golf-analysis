@@ -13,3 +13,7 @@
 - Restored standard video processing print statements using `tqdm.write()` to preserve output history logs above the progress bar.
 - Removed tqdm dependency from pyproject.toml and uv.lock, switching to plain prints in data_pipeline_exploration.ipynb to avoid dependency bloat.
 - Generated and saved the complete master_training_dataset.csv with all 1399 cached video features and sliding window feature engineering.
+- Created notebooks/xgb_model.ipynb and implemented a randomized group-split of the dataset by video_id into Train (80%), Val (10%), and Test (10%) sets.
+- Added scikit-learn dependency and updated the .gitignore to ignore scratch/ directory.
+- Configured sample weights for class imbalance and trained an XGBClassifier, evaluating predictions using a chronological post-processing peak-finding logic which reduced max sequence error from 724 frames to 84 frames.
+- Exported the finalized training and inference functions to src/train_classifier.py, and updated the notebook to import from it to avoid code duplication.
