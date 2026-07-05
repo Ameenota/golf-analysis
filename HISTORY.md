@@ -10,5 +10,6 @@
 - Created `TODO.md` to track future feature engineering and model tuning experiments.
 - Added CSV checkpointing/caching to the video processing loop in `notebooks/data_pipeline_exploration.ipynb` for robust resume capability.
 - Integrated `tqdm` progress bar and added it to project dependencies in `pyproject.toml` using `uv` to keep notebook output logs clean.
-
-
+- Restored standard video processing print statements using `tqdm.write()` to preserve output history logs above the progress bar.
+- Removed tqdm dependency from pyproject.toml and uv.lock, switching to plain prints in data_pipeline_exploration.ipynb to avoid dependency bloat.
+- Generated and saved the complete master_training_dataset.csv with all 1399 cached video features and sliding window feature engineering.

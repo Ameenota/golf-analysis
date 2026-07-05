@@ -404,7 +404,6 @@ dependencies = [
     { name = "opencv-python" },
     { name = "pandas" },
     { name = "scipy" },
-    { name = "tqdm" },
     { name = "xgboost" },
 ]
 
@@ -416,7 +415,6 @@ requires-dist = [
     { name = "opencv-python", specifier = ">=5.0.0.93" },
     { name = "pandas", specifier = ">=3.0.3" },
     { name = "scipy", specifier = ">=1.18.0" },
-    { name = "tqdm", specifier = ">=4.68.3" },
     { name = "xgboost", specifier = ">=3.3.0" },
 ]
 
