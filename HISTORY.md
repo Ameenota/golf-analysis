@@ -17,3 +17,6 @@
 - Added scikit-learn dependency and updated the .gitignore to ignore scratch/ directory.
 - Configured sample weights for class imbalance and trained an XGBClassifier, evaluating predictions using a chronological post-processing peak-finding logic which reduced max sequence error from 724 frames to 84 frames.
 - Exported the finalized training and inference functions to src/train_classifier.py, and updated the notebook to import from it to avoid code duplication.
+- Created `notebooks/isolation_forest_gatekeeper.ipynb` documenting and demonstrating the unsupervised Isolation Forest gatekeeper model, threshold tuning, and video-level classification rules.
+- Robustified `src/data_processor.py` to handle empty or undecodable video files gracefully, returning a clean ValueError and preventing internal Savitzky-Golay filtering crashes on NaN arrays.
+

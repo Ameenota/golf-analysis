@@ -135,6 +135,9 @@ class GolfVideoProcessor:
             
         df, width, height, fps = self.extract_raw_landmarks(video_path)
         
+        if df.empty or len(df) == 0:
+            raise ValueError(f"No frames could be decoded from video: {video_path}")
+        
         # Verify length is sufficient for Savitzky-Golay window
         n_frames = len(df)
         if n_frames < window:
@@ -147,11 +150,14 @@ class GolfVideoProcessor:
             for coord in ['x', 'y']:
                 col_name = f"raw_{name}_{coord}"
                 smooth_col_name = f"smooth_{name}_{coord}"
-                df[smooth_col_name] = savgol_filter(
-                    df[col_name].values, 
-                    window_length=window, 
-                    polyorder=min(polyorder, window - 1)
-                )
+                if df[col_name].isna().all():
+                    df[smooth_col_name] = np.nan
+                else:
+                    df[smooth_col_name] = savgol_filter(
+                        df[col_name].values, 
+                        window_length=window, 
+                        polyorder=min(polyorder, window - 1)
+                    )
                 
         # 2. Compute mid-hip and mid-shoulder using smoothed pixel coordinates
         df["mid_hip_x"] = (df["smooth_left_hip_x"] + df["smooth_right_hip_x"]) / 2.0
