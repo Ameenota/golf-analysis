@@ -19,4 +19,6 @@
 - Exported the finalized training and inference functions to src/train_classifier.py, and updated the notebook to import from it to avoid code duplication.
 - Created `notebooks/isolation_forest_gatekeeper.ipynb` documenting and demonstrating the unsupervised Isolation Forest gatekeeper model, threshold tuning, and video-level classification rules.
 - Robustified `src/data_processor.py` to handle empty or undecodable video files gracefully, returning a clean ValueError and preventing internal Savitzky-Golay filtering crashes on NaN arrays.
-
+- Created `.agents/rules/session_management.md` defining the workspace session context tracking protocol.
+- Updated `session_context.md` to reflect current model components and map the UCF precomputation/evaluation next steps.
+- Checked off the completed Isolation Forest gatekeeper prototyping task in `TODO.md`.

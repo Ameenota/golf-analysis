@@ -14,9 +14,11 @@ This file tracks technical debt, future feature ideas, and machine learning expe
 - [ ] **Class Weight Optimization**
   - **Idea**: Experiment with different scale ratios for the transitional class `0` to optimize the precision/recall trade-off for the milestone classes `1-8`.
 
-- [ ] **Unsupervised Golf Swing Gatekeeper (Isolation Forest)**
+- [x] **Unsupervised Golf Swing Gatekeeper (Isolation Forest)**
   - **Idea**: Train an `sklearn.ensemble.IsolationForest` on the exact same coordinate features in `master_training_dataset.csv` (ignoring labels).
   - **Goal**: Create a simple Yes/No swing detector to automatically reject non-golf videos (like dancing or empty rooms) during inference without needing any negative training data.
+  - **Status**: Implemented prototype in [isolation_forest_gatekeeper.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/isolation_forest_gatekeeper.ipynb); next step is full evaluation on UCF dataset.
+
 
 
 ## 🧹 Data Quality & Sanitization
