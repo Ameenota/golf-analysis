@@ -27,6 +27,10 @@
 - Optimized the gatekeeper evaluation script to skip precomputed CSVs and copied false negatives/positives to a diagnostic folder.
 - Added flexible posture window validation and golfer centroid tracking tasks to TODO.md.
 - Added the dedicated binary XGBoost detector task to TODO.md specifying the baseline to beat (77% Recall, 47% Precision).
-
-
-
+- Added background color ratio features as a future experiment to the binary detector task in TODO.md.
+- Created `notebooks/xgb_binary_detector.ipynb` to load, merge, and split the GolfDB and UCF non-golf datasets and train a dedicated binary XGBoost model on the 98 normalized coordinates (excluding metadata to prevent leakage).
+- Created a scratch script `scratch/process_additional_negatives.py` to process exactly 443 additional UCF non-golf videos to achieve a perfect 1:1 frame balance if desired, and generated a unified CSV dataset (`data/processed/binary_detector_dataset.csv`) to speed up subsequent training runs.
+- Updated the project context log and checked off completed tasks in `TODO.md`.
+- Created a consolidated preprocessing notebook `notebooks/data_preprocessing.ipynb` to handle dataset consolidation, sliding window feature engineering, label mapping, and outputting `master_dataset.csv`.
+- Simplified training notebooks `notebooks/xgb_binary_detector.ipynb` and `notebooks/xgb_model.ipynb` to load directly from `master_dataset.csv`.
+- Reverted temporary scratch scripts to ensure a clean workspace and prepared CLI commands for directory creation, copying, and file cleanup.
