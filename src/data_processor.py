@@ -32,6 +32,7 @@ class GolfVideoProcessor:
         self.options = vision.PoseLandmarkerOptions(
             base_options=self.base_options,
             running_mode=vision.RunningMode.VIDEO,
+            num_poses=5,  # Enable multiple people detection
             output_segmentation_masks=False
         )
         self.detector = vision.PoseLandmarker.create_from_options(self.options)
@@ -95,6 +96,7 @@ class GolfVideoProcessor:
             }
             
             if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                frame_row["num_people"] = len(result.pose_landmarks)
                 # Use the first detected person
                 landmarks = result.pose_landmarks[0]
                 for i, name in enumerate(self.landmark_names):
@@ -105,6 +107,7 @@ class GolfVideoProcessor:
                     frame_row[f"raw_{name}_z"] = lm.z  # Relative depth
                     frame_row[f"raw_{name}_vis"] = lm.visibility
             else:
+                frame_row["num_people"] = 0
                 # If pose detection fails, fill with NaNs to be interpolated
                 for name in self.landmark_names:
                     frame_row[f"raw_{name}_x"] = np.nan
@@ -197,4 +200,11 @@ class GolfVideoProcessor:
                 norm_cols[norm_col] = (df[smooth_col] - df[mid_col]) / torso_scale
                 
         df = pd.concat([df, pd.DataFrame(norm_cols, index=df.index)], axis=1)
+        
+        # 5. Compute torso verticality and orientation relative to vertical y-axis
+        dx = df["mid_shoulder_x"] - df["mid_hip_x"]
+        dy = df["mid_shoulder_y"] - df["mid_hip_y"]
+        df["torso_angle_deg"] = np.degrees(np.arctan2(np.abs(dx), np.abs(dy) + 1e-10))
+        df["is_upright"] = (df["mid_shoulder_y"] < df["mid_hip_y"]).astype(int)
+        
         return df

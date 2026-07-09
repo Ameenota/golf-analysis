@@ -22,3 +22,7 @@
 - Created `.agents/rules/session_management.md` defining the workspace session context tracking protocol.
 - Updated `session_context.md` to reflect current model components and map the UCF precomputation/evaluation next steps.
 - Checked off the completed Isolation Forest gatekeeper prototyping task in `TODO.md`.
+- Updated `src/data_processor.py` to calculate `num_people`, `torso_angle_deg`, and `is_upright` columns on the fly.
+- Created `notebooks/xgb_gatekeeper_evaluation.ipynb` implementing and evaluating the unified XGBoost Milestone Confidence + Physical Rules gatekeeper on 1,642 UCF videos.
+- Optimized the gatekeeper evaluation script to skip precomputed CSVs and copied false negatives/positives to a diagnostic folder.
+

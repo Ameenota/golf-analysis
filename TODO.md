@@ -17,7 +17,13 @@ This file tracks technical debt, future feature ideas, and machine learning expe
 - [x] **Unsupervised Golf Swing Gatekeeper (Isolation Forest)**
   - **Idea**: Train an `sklearn.ensemble.IsolationForest` on the exact same coordinate features in `master_training_dataset.csv` (ignoring labels).
   - **Goal**: Create a simple Yes/No swing detector to automatically reject non-golf videos (like dancing or empty rooms) during inference without needing any negative training data.
-  - **Status**: Implemented prototype in [isolation_forest_gatekeeper.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/isolation_forest_gatekeeper.ipynb); next step is full evaluation on UCF dataset.
+  - **Status**: Completed full evaluation on the 1,642 UCF dataset videos. Achieved AUC PR of 0.6802 and optimal F1-score of 0.6568 (precision 68.99%, recall 62.68% at threshold 0.1429).
+
+- [x] **Unified XGBoost + Rules Gatekeeper**
+  - **Idea**: Use a combination of physical rules (human count, verticality, downswing duration) and milestone confidence probability.
+  - **Goal**: Build a highly selective, recall-first gatekeeper that filters out irrelevant content.
+  - **Status**: Completed evaluation on 1,642 UCF videos. Reached AUC PR of 0.7904, Max F1-score of 0.8115, and 91.6% rejection rate of non-golf at target recall threshold of 0.20.
+
 
 
 
