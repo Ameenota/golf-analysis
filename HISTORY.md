@@ -25,4 +25,6 @@
 - Updated `src/data_processor.py` to calculate `num_people`, `torso_angle_deg`, and `is_upright` columns on the fly.
 - Created `notebooks/xgb_gatekeeper_evaluation.ipynb` implementing and evaluating the unified XGBoost Milestone Confidence + Physical Rules gatekeeper on 1,642 UCF videos.
 - Optimized the gatekeeper evaluation script to skip precomputed CSVs and copied false negatives/positives to a diagnostic folder.
+- Added flexible posture window validation and golfer centroid tracking tasks to TODO.md.
+
 

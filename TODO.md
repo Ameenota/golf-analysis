@@ -38,6 +38,14 @@ This file tracks technical debt, future feature ideas, and machine learning expe
 - [ ] **Occlusion Handling**
   - **Idea**: Detect frames with high NaN density (MediaPipe tracking failures due to high motion blur or body rotation) and interpolate them using spline interpolation instead of linear interpolation.
 
+- [ ] **Flexible Posture Window Validation**
+  - **Idea**: Experiment with different validation windows for posture/verticality checks (e.g., middle frames vs. dynamically identifying the stationary address frame) to handle cases where the swing setup does not start at frame 0.
+
+- [ ] **Golfer Tracking & Lock-on (Centroid Tracking)**
+  - **Idea**: Implement Centroid or Proximity tracking to lock onto the primary golfer in the frame.
+  - **Goal**: Support multi-person frames (e.g., coach in frame, bystanders) and ignore background people, replacing the naive multi-person rejection check.
+
+
 ## 📐 Biomechanical Rules Engine
 
 - [ ] **Additional 2D Swing Metrics**
