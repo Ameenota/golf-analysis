@@ -26,5 +26,7 @@
 - Created `notebooks/xgb_gatekeeper_evaluation.ipynb` implementing and evaluating the unified XGBoost Milestone Confidence + Physical Rules gatekeeper on 1,642 UCF videos.
 - Optimized the gatekeeper evaluation script to skip precomputed CSVs and copied false negatives/positives to a diagnostic folder.
 - Added flexible posture window validation and golfer centroid tracking tasks to TODO.md.
+- Added the dedicated binary XGBoost detector task to TODO.md specifying the baseline to beat (77% Recall, 47% Precision).
+
 
 

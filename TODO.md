@@ -24,6 +24,12 @@ This file tracks technical debt, future feature ideas, and machine learning expe
   - **Goal**: Build a highly selective, recall-first gatekeeper that filters out irrelevant content.
   - **Status**: Completed evaluation on 1,642 UCF videos. Reached AUC PR of 0.7904, Max F1-score of 0.8115, and 91.6% rejection rate of non-golf at target recall threshold of 0.20.
 
+- [ ] **Dedicated Binary XGBoost Detector (Golf vs. Non-Golf)**
+  - **Idea**: Train a separate, dedicated binary XGBoost model (using `objective="binary:logistic"`) on GolfDB (positives) and UCF50 non-golf (negatives).
+  - **Goal**: Cleanly separate detection from milestone segmentation to achieve a more robust and less complex gatekeeper.
+  - **Target to Beat**: Golf Recall = **77%**, Golf Precision = **47%**, F1 = **58%** (Confusion Matrix: 110 TP, 32 FN, 126 FP, 1374 TN at 0.20 threshold).
+
+
 
 
 
