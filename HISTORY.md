@@ -34,3 +34,6 @@
 - Created a consolidated preprocessing notebook `notebooks/data_preprocessing.ipynb` to handle dataset consolidation, sliding window feature engineering, label mapping, and outputting `master_dataset.csv`.
 - Simplified training notebooks `notebooks/xgb_binary_detector.ipynb` and `notebooks/xgb_model.ipynb` to load directly from `master_dataset.csv`.
 - Reverted temporary scratch scripts to ensure a clean workspace and prepared CLI commands for directory creation, copying, and file cleanup.
+- Added `fastai` and `torch` dependencies to `pyproject.toml` and created `notebooks/lstm_model.ipynb` implementing the Bidirectional LSTM milestone locator.
+- Updated `notebooks/xgb_binary_detector.ipynb` to train the official gatekeeper binary model and deleted obsolete gatekeeper evaluation notebooks.
+- Updated `session_context.md` and `TODO.md` to document the new model performance (3.52 frame MAE) and updated next-session tasks.

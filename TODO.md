@@ -27,7 +27,11 @@ This file tracks technical debt, future feature ideas, and machine learning expe
 - [ ] **Dedicated Binary XGBoost Detector (Golf vs. Non-Golf)**
   - **Idea**: Train a separate, dedicated binary XGBoost model (using `objective="binary:logistic"`) on GolfDB (positives) and UCF50 non-golf (negatives).
   - **Goal**: Cleanly separate detection from milestone segmentation to achieve a more robust and less complex gatekeeper.
+  - **Experiments to Try**:
+    - [ ] **Postural Features**: Test if adding `is_upright` and `torso_angle_deg` as training features directly to the XGBoost binary detector improves the rejection of horizontal/non-upright movements.
   - **Target to Beat**: Golf Recall = **77%**, Golf Precision = **47%**, F1 = **58%** (Confusion Matrix: 110 TP, 32 FN, 126 FP, 1374 TN at 0.20 threshold).
+
+
 
 
 

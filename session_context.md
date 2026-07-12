@@ -8,8 +8,9 @@ We unified the dataset preprocessing pipeline, simplified the training notebooks
 
 ### 1. Codebase & Components
 - **[data_preprocessing.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/data_preprocessing.ipynb)**: A unified notebook to consolidate GolfDB and UCF non-golf single video CSVs, calculate sliding window features, assign milestones, and output `master_dataset.csv`.
-- **[xgb_binary_detector.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_binary_detector.ipynb)**: Updated to read directly from `master_dataset.csv` using the unified `is_golf` column as target label.
-- **[xgb_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_model.ipynb)**: Updated to load `master_dataset.csv` and filter for golf swings (`is_golf == 1`) before training the phase classifier.
+- **[xgb_binary_detector.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_binary_detector.ipynb)**: Our official gatekeeper binary model trained using XGBoost (99.0% test accuracy).
+- **[lstm_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_model.ipynb)**: Our main multiclass milestone locator trained using a Bidirectional LSTM in Fastai, operating directly on base coordinates (no windowing required) and achieving an overall MAE of 3.52 frames.
+- **[xgb_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_model.ipynb)**: Baseline multiclass phase locator using XGBoost (8.41 frames MAE).
 - **[data_processor.py](file:///Users/sagar/Documents/ML/golf-analysis/src/data_processor.py)**: Core landmark extractor.
 
 ### 2. Workspace Cleanups
@@ -29,6 +30,6 @@ We unified the dataset preprocessing pipeline, simplified the training notebooks
 
 ## Action Plan for Next Session
 
-1. **Dataset Generation & Verification**: Open and run `data_preprocessing.ipynb` to generate `master_dataset.csv`.
-2. **Model Training & Evaluation**: Train and evaluate both the binary detector and multiclass phase models using the consolidated dataset.
-3. **Pipeline Integration**: Integrate the trained binary XGBoost detector directly into the main swing analyzer inference pipeline.
+1. **Inference Pipeline Integration**: Update the swing analyzer inference wrapper to run the high-accuracy XGBoost binary detector first, and if validated, invoke the Fastai LSTM milestone locator to extract swing milestones.
+2. **Post-processing Validation**: Ensure predicted milestones from the LSTM conform to chronological order, integrating Viterbi-like or confidence threshold rules.
+3. **Pipeline Verification**: Test the complete end-to-end pipeline on new test videos.
