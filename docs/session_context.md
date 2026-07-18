@@ -17,8 +17,9 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Installed `seaborn` plotting library.
 - Removed deprecated `.pt` PyTorch models from `models/`.
 - Created [src/alignment.py](file:///Users/sagar/Documents/ML/golf-analysis/src/alignment.py) for Dynamic Programming monotonic milestone alignment.
-- Implemented and validated the end-to-end inference script [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with plot saving and skeletal video overlay.
+- Implemented and validated the end-to-end inference script [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with plot saving, skeletal video overlay, and file JSON caching.
 - Added a batch validation utility [scratch/verify_pipeline.py](file:///Users/sagar/Documents/ML/golf-analysis/scratch/verify_pipeline.py) achieving 2.95 frames overall MAE.
+- Processed 6 unseen QuickTime MOV videos in `data/r-videos/`, producing local JSON outputs and skeletal overlay `.mov` annotated clips using `scratch/process_r_videos.py`.
 
 ---
 
