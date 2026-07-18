@@ -42,5 +42,8 @@
 - Created `docs/architecture.md` (detailing coordinate pipeline and model features) and `docs/product.md` (detailing product requirements).
 - Merged the new pipeline integration and validation tasks into the updated `docs/backlog.md` and `session_context.md`.
 - Moved `session_context.md` to `docs/session_context.md` and updated agent configuration rules.
+- Reorganized and prioritized the project backlog in [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md), moving obsolete experiments to the dropped section and marking the dedicated binary XGBoost gatekeeper as completed.
+- Removed PyTorch and Fastai dependencies using `uv remove`, and deleted the deprecated PyTorch/Fastai notebook [notebooks/lstm_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_model.ipynb) to clean up technical debt.
+
 
 
