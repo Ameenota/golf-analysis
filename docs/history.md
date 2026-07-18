@@ -46,6 +46,9 @@
 - Removed PyTorch and Fastai dependencies using `uv remove`, and deleted the deprecated PyTorch/Fastai notebook [notebooks/lstm_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_model.ipynb) to clean up technical debt.
 - Unified the agent configuration rules across [Agents.md](file:///Users/sagar/Documents/ML/golf-analysis/Agents.md), [.agents/rules/ledger.md](file:///Users/sagar/Documents/ML/golf-analysis/.agents/rules/ledger.md), and [.agents/rules/session_management.md](file:///Users/sagar/Documents/ML/golf-analysis/.agents/rules/session_management.md).
 - Deleted the duplicate [HISTORY.md](file:///Users/sagar/Documents/ML/golf-analysis/HISTORY.md) file at the root, redirecting the Git Commit Protocol to track updates in [docs/history.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/history.md) directly.
+- Created [.agents/rules/permissions.md](file:///Users/sagar/Documents/ML/golf-analysis/.agents/rules/permissions.md) to define workspace boundaries and sandbox permission constraints.
+- Updated [Agents.md](file:///Users/sagar/Documents/ML/golf-analysis/Agents.md) to remove the duplicate permissions details and reference the new rule file directly.
+
 
 
 

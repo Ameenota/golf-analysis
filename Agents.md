@@ -33,15 +33,9 @@ Before starting a task, consult the files in `docs/` depending on your current n
 
 ---
 
-## 3. Agent Execution Rules & Permissions
+## 3. Agent Execution Rules & Protocols
 
-### Workspace Bounds & Permissions
-* **Full Control**: You have full read, write, and execute permissions within the project root: `/Users/sagar/Documents/ML/golf-analysis`. You can edit files and run tests or scripts inside this workspace freely.
-* **Pre-Approved Git Commands**: Standard git operations, including `git push`, are pre-approved and allowed to bypass sandbox constraints in this directory.
-* **Hard Approval Required**:
-  * Any execution of command lines containing `sudo`.
-  * Modifying files or running commands outside `/Users/sagar/Documents/ML/golf-analysis` (e.g., system configuration, global files).
-  * Any action with structural or environmental risks.
+For details on sandbox constraints and permissions boundaries, see the [.agents/rules/permissions.md](file:///Users/sagar/Documents/ML/golf-analysis/.agents/rules/permissions.md) rule file.
 
 ### Python Environment Policy
 * Strictly use `uv` for package management and script execution.
