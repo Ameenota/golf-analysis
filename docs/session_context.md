@@ -14,9 +14,11 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - **[data_processor.py](file:///Users/sagar/Documents/ML/golf-analysis/src/data_processor.py)**: Core landmark extractor.
 
 ### 2. Workspace Cleanups
-- Standardized project documentation under `docs/` and defined agent boundaries in [Agents.md](file:///Users/sagar/Documents/ML/golf-analysis/Agents.md).
-- Switched python target to 3.13 for TensorFlow compatibility and set up Keras pipeline.
-- Verified Keras LSTM model training and peak-finding evaluation.
+- Installed `seaborn` plotting library.
+- Removed deprecated `.pt` PyTorch models from `models/`.
+- Created [src/alignment.py](file:///Users/sagar/Documents/ML/golf-analysis/src/alignment.py) for Dynamic Programming monotonic milestone alignment.
+- Implemented and validated the end-to-end inference script [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with plot saving and skeletal video overlay.
+- Added a batch validation utility [scratch/verify_pipeline.py](file:///Users/sagar/Documents/ML/golf-analysis/scratch/verify_pipeline.py) achieving 2.95 frames overall MAE.
 
 ---
 
@@ -31,8 +33,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 
 ## Action Plan for Next Session
 
-1. **Clean up Technical Debt**: Remove PyTorch/Fastai dependencies from `pyproject.toml` and delete the old PyTorch notebook `lstm_model.ipynb`.
-2. **Inference Pipeline Integration**: Update the swing analyzer inference wrapper to run the high-accuracy XGBoost binary detector first, and if validated, invoke the TensorFlow/Keras LSTM milestone locator to extract swing milestones.
-3. **Post-processing Validation**: Ensure predicted milestones from the LSTM conform to chronological order, integrating Viterbi-like or confidence threshold rules.
-4. **Pipeline Verification**: Test the complete end-to-end pipeline on new test videos.
+1. **Biomechanical Analysis**: Implement calculation of key angles (such as Spine Tilt, Knee Flex, and Lead Arm Flex) at setup and milestone frames.
+2. **Coaching Drills Integration**: Map calculated biomechanical issues to coaching advice (e.g., if Lead Arm Flex is bent, suggest relevant training drills).
+3. **Pro Matchmaker & Sync Video**: Plan the side-by-side video synchronization and warping module to match the user's swing tempo to a professional swing.
 

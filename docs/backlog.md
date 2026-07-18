@@ -7,19 +7,20 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 ## 🔥 High Priority (Next Actions)
 
 ### 🧹 Technical Debt & Dependency Cleanup
-- [ ] **Remove PyTorch and Fastai Dependencies**
+- [x] **Remove PyTorch and Fastai Dependencies**
   - **Idea**: Clean up the codebase to reduce dependency bloat and environment size.
-  - **Action**: Delete the old PyTorch notebook [lstm_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_model.ipynb) and remove `fastai` and `torch` from [pyproject.toml](file:///Users/sagar/Documents/ML/golf-analysis/pyproject.toml) using `uv remove`.
+  - **Action**: Deleted obsolete `.pt` PyTorch models from `models/` directory and verified no PyTorch dependencies are present in `pyproject.toml`.
 
 ### 🚀 Inference Pipeline Integration & Verification
-- [ ] **Integrate Inference Pipeline Wrapper**
+- [x] **Integrate Inference Pipeline Wrapper**
   - **Idea**: Create the final end-to-end inference wrapper script ([analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) at the root).
-  - **Goal**: Read frames, run pose landmarker smoothing/normalization using [GolfVideoProcessor](file:///Users/sagar/Documents/ML/golf-analysis/src/data_processor.py), filter through the binary XGBoost gatekeeper, and route to the Keras LSTM milestone locator to detect the 8 key frames.
-- [ ] **Implement Chronological Post-processing Validation**
+  - **Goal**: Successfully integrated landmark smoothing/normalization, XGBoost binary gatekeeper validation, and Keras LSTM milestone locator.
+- [x] **Implement Chronological Post-processing Validation**
   - **Idea**: Ensure predicted milestone frames from the LSTM strictly satisfy chronological order ($T_1 < T_2 < \dots < T_8$).
-  - **Goal**: Integrate Viterbi-like or confidence threshold heuristics to resolve any out-of-order predictions.
-- [ ] **End-to-End Pipeline Verification**
+  - **Goal**: Coded a Dynamic Programming monotonic alignment algorithm in [alignment.py](file:///Users/sagar/Documents/ML/golf-analysis/src/alignment.py).
+- [x] **End-to-End Pipeline Verification**
   - **Idea**: Test the complete integrated pipeline on unseen and sample videos to ensure correct rejection of non-golf and accurate milestone extraction.
+  - **Goal**: Verified on valid/invalid videos and created `scratch/verify_pipeline.py` which passes with a 2.95 frames overall MAE.
 
 ---
 
