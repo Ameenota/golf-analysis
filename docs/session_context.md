@@ -34,7 +34,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 
 ## Action Plan for Next Session
 
-1. **Biomechanical Analysis**: Implement calculation of key angles (such as Spine Tilt, Knee Flex, and Lead Arm Flex) at setup and milestone frames.
-2. **Coaching Drills Integration**: Map calculated biomechanical issues to coaching advice (e.g., if Lead Arm Flex is bent, suggest relevant training drills).
-3. **Pro Matchmaker & Sync Video**: Plan the side-by-side video synchronization and warping module to match the user's swing tempo to a professional swing.
+1. **Biomechanical Metrics & Angles**: Code the calculations for spine tilt, knee flex, and lead arm flex at their corresponding milestone frames, integrating warnings if thresholds are exceeded.
+2. **Visual Overlay Refinement (Option B)**: Implement the persistent milestone list corner-overlay to clean up transient visual label mismatches when reviewing slow-motion videos.
+3. **Synchronized Video Warping**: Create a blueprint/script to warp the user video and pro template video so their detected milestones match frame-for-frame side-by-side.
 

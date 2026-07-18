@@ -50,6 +50,10 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 - [ ] **Occlusion Handling**
   - **Idea**: Detect frames with high NaN density (MediaPipe tracking failures due to high motion blur or rotation) and interpolate using spline interpolation instead of linear.
 
+### 🎨 Visual Overlay Improvements
+- [ ] **Persistent Milestone Log Overlay (Option B)**
+  - **Idea**: Add a permanent list in the corner of the annotated video that updates chronologically as milestones are hit, preventing confusion in slow-motion play.
+
 ### ⚡ Performance & Scaling
 - [ ] **Parallel Video Processing**
   - **Idea**: Use Python's `ProcessPoolExecutor` to process multiple videos in parallel to utilize the full CPU cores of the M4 chip.
