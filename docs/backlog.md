@@ -70,3 +70,25 @@ This file tracks technical debt, future feature ideas, and machine learning expe
   - **Idea**: Use Python's `concurrent.futures.ProcessPoolExecutor` to process multiple videos in parallel.
   - **Goal**: Utilize all CPU cores of the M4 chip to achieve a 5x-8x speedup on batch dataset generation.
 
+## 🧹 Technical Debt & Dependency Cleanup
+
+- [ ] **Remove PyTorch and Fastai Dependencies**
+  - **Idea**: Once the Keras LSTM model is fully validated and integrated into the inference pipeline, clean up the codebase.
+  - **Goal**: Delete the old PyTorch notebook `notebooks/lstm_model.ipynb` and remove the `fastai` and `torch` dependencies using `uv remove` to reduce the environment size.
+
+## 🚀 Inference Pipeline Integration & Verification
+
+- [ ] **Integrate Inference Pipeline Wrapper**
+  - **Idea**: Create the final end-to-end inference wrapper script (`analyze_swing.py` at the root). 
+  - **Goal**: Read frames, run pose landmarker smoothing and normalization using [GolfVideoProcessor](file:///Users/sagar/Documents/ML/golf-analysis/src/data_processor.py#L11), filter through the binary XGBoost gatekeeper, and route to the Keras LSTM milestone locator to detect the 8 key frames.
+
+- [ ] **Implement Chronological Post-processing Validation**
+  - **Idea**: Predicted milestone frames from the LSTM must satisfy chronological order ($T_1 < T_2 < \dots < T_8$).
+  - **Goal**: Integrate Viterbi-like or confidence threshold heuristics to resolve any out-of-order predictions.
+
+- [ ] **End-to-End Pipeline Verification**
+  - **Idea**: Test the complete integrated pipeline on unseen or sample videos.
+  - **Goal**: Ensure the binary gatekeeper correctly rejects non-golf and accepts golf swings, and the LSTM extracts milestones reliably.
+
+
+

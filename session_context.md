@@ -4,18 +4,19 @@ This log summarizes the progress made so far and the current state of the worksp
 
 ## Current Project State
 
-We unified the dataset preprocessing pipeline, simplified the training notebooks to load from a single consolidated master dataset, and prepared the workspace for cleanup.
+We reorganized the workspace documentation, creating a unified `docs/` folder, adding [Agents.md](file:///Users/sagar/Documents/ML/golf-analysis/Agents.md), [docs/architecture.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/architecture.md), and [docs/product.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/product.md), and migrating older text files to [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md), [docs/roadmap.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/roadmap.md), and [docs/history.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/history.md).
 
 ### 1. Codebase & Components
 - **[data_preprocessing.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/data_preprocessing.ipynb)**: A unified notebook to consolidate GolfDB and UCF non-golf single video CSVs, calculate sliding window features, assign milestones, and output `master_dataset.csv`.
 - **[xgb_binary_detector.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_binary_detector.ipynb)**: Our official gatekeeper binary model trained using XGBoost (99.0% test accuracy).
-- **[lstm_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_model.ipynb)**: Our main multiclass milestone locator trained using a Bidirectional LSTM in Fastai, operating directly on base coordinates (no windowing required) and achieving an overall MAE of 3.52 frames.
+- **[lstm_keras.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/lstm_keras.ipynb)**: Our main multiclass milestone locator trained using a Bidirectional LSTM in TensorFlow/Keras, operating directly on base coordinates (no windowing required) and achieving an overall MAE of 4.65 frames.
 - **[xgb_model.ipynb](file:///Users/sagar/Documents/ML/golf-analysis/notebooks/xgb_model.ipynb)**: Baseline multiclass phase locator using XGBoost (8.41 frames MAE).
 - **[data_processor.py](file:///Users/sagar/Documents/ML/golf-analysis/src/data_processor.py)**: Core landmark extractor.
 
 ### 2. Workspace Cleanups
-- Verified modifications to both training notebooks.
-- Documented manual folder creation, dataset migration, and obsolete file deletion commands in `walkthrough.md`.
+- Standardized project documentation under `docs/` and defined agent boundaries in [Agents.md](file:///Users/sagar/Documents/ML/golf-analysis/Agents.md).
+- Switched python target to 3.13 for TensorFlow compatibility and set up Keras pipeline.
+- Verified Keras LSTM model training and peak-finding evaluation.
 
 ---
 
@@ -30,6 +31,8 @@ We unified the dataset preprocessing pipeline, simplified the training notebooks
 
 ## Action Plan for Next Session
 
-1. **Inference Pipeline Integration**: Update the swing analyzer inference wrapper to run the high-accuracy XGBoost binary detector first, and if validated, invoke the Fastai LSTM milestone locator to extract swing milestones.
-2. **Post-processing Validation**: Ensure predicted milestones from the LSTM conform to chronological order, integrating Viterbi-like or confidence threshold rules.
-3. **Pipeline Verification**: Test the complete end-to-end pipeline on new test videos.
+1. **Clean up Technical Debt**: Remove PyTorch/Fastai dependencies from `pyproject.toml` and delete the old PyTorch notebook `lstm_model.ipynb`.
+2. **Inference Pipeline Integration**: Update the swing analyzer inference wrapper to run the high-accuracy XGBoost binary detector first, and if validated, invoke the TensorFlow/Keras LSTM milestone locator to extract swing milestones.
+3. **Post-processing Validation**: Ensure predicted milestones from the LSTM conform to chronological order, integrating Viterbi-like or confidence threshold rules.
+4. **Pipeline Verification**: Test the complete end-to-end pipeline on new test videos.
+
