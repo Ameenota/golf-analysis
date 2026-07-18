@@ -51,5 +51,10 @@ Before starting a task, consult the files in `docs/` depending on your current n
 
 ### Git Commit Protocol
 * Before making a git commit, you must view the git diff of your changes.
-* Summarize your changes in `docs/history.md` (and also update `HISTORY.md` at the root if required by system pre-commit hooks or automatic validators).
-* Run `git add` on the updated history files so they are included in your commit.
+* Summarize your changes in [docs/history.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/history.md).
+* Run `git add docs/history.md` so it is included in your commit.
+
+### Session Management Protocol
+* **On Startup**: Always read [docs/session_context.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/session_context.md) and [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md) at the very beginning of the session to align on the current project state.
+* **On Wrap-up**: Before finishing a session, update [docs/session_context.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/session_context.md) with a summary of progress made and an explicit, step-by-step "Action Plan for Next Session". Update [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md) to check off completed items or append new ones.
+
