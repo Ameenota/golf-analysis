@@ -13,8 +13,11 @@ The **Golf Swing Analyzer** is a computer vision and machine learning pipeline t
 Before starting a task, consult the files in `docs/` depending on your current needs:
 
 * **[docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md)**:
-  * *When to read*: At the start of every session (in tandem with `session_context.md`).
+  * *When to read*: At the start of every session (in tandem with [docs/session_context.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/session_context.md)).
   * *Purpose*: Track current issues, tasks in progress, completed features, and technical debt. Update this file as you complete tasks.
+* **[docs/session_context.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/session_context.md)**:
+  * *When to read*: At the start of every session (in tandem with [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md)).
+  * *Purpose*: Session-to-session state tracking, active tasks, and action plans.
 * **[docs/architecture.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/architecture.md)**:
   * *When to read*: When modifying models, data extraction, coordinate normalization, or inference wrappers.
   * *Purpose*: Detailed breakdown of the MediaPipe extraction pipeline, coordinates, sliding windows, and trained models.
