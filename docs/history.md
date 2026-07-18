@@ -53,3 +53,5 @@
 - Created `src/alignment.py` containing the dynamic programming monotonic alignment algorithm to enforce chronological milestone ordering ($T_1 < T_2 < \dots < T_8$).
 - Created the end-to-end inference wrapper script `analyze_swing.py` that processes raw videos, runs gatekeeping (threshold 0.7346) and LSTM milestone classification, applies monotonic alignment, and outputs JSON metrics, plot files, and skeleton overlays.
 - Created `scratch/verify_pipeline.py` which validates accuracy on a batch of 10 random golf videos, successfully passing with an overall MAE of 2.95 frames (below the 6.0 frames target threshold).
+- Updated `analyze_swing.py` to support a `--save-json` parameter for writing the outputs directly to file and resolved a nested block syntax error.
+- Created `scratch/process_r_videos.py` to process unseen QuickTime `.mov`/`.MOV` files in `data/r-videos/`, validating and producing JSON outputs and skeletal overlay `.mov` annotated clips.

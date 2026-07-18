@@ -25,26 +25,37 @@ MILESTONE_NAMES = [
     "Finish"
 ]
 
+def write_and_print_output(output, save_json_path=""):
+    print(json.dumps(output, indent=2))
+    if save_json_path:
+        parent_dir = os.path.dirname(os.path.abspath(save_json_path))
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+        with open(save_json_path, "w") as f:
+            json.dump(output, f, indent=2)
+
 def main():
+    save_json_path = ""
     parser = argparse.ArgumentParser(description="End-to-End Golf Swing Analyzer Inference CLI")
     parser.add_argument("video_path", type=str, help="Path to raw golf swing video file")
     parser.add_argument("--gatekeeper-threshold", type=float, default=0.7346,
                         help="Confidence threshold for golf swing validation (default: 0.7346)")
     parser.add_argument("--plot", type=str, default="", help="Path to save diagnostic probabilities plot (.png)")
     parser.add_argument("--save-video", type=str, default="", help="Path to save annotated skeleton overlay video (.mp4)")
+    parser.add_argument("--save-json", type=str, default="", help="Path to save output JSON results")
     
     args = parser.parse_args()
+    save_json_path = args.save_json
     
-    # 1. Verification of inputs
     if not os.path.exists(args.video_path):
         output = {
             "success": False,
-            "validated": false,
+            "validated": False,
             "gatekeeper_score": 0.0,
             "error": f"Video file not found: {args.video_path}",
             "milestones": None
         }
-        print(json.dumps(output, indent=2))
+        write_and_print_output(output, save_json_path)
         return
         
     try:
@@ -87,7 +98,7 @@ def main():
                 "error": f"Video failed golf swing validation. Gatekeeper score of {avg_gate_prob:.4f} is below the threshold of {args.gatekeeper_threshold:.4f}.",
                 "milestones": None
             }
-            print(json.dumps(output, indent=2))
+            write_and_print_output(output, save_json_path)
             return
             
         # 5. Keras LSTM Milestone Inference
@@ -139,14 +150,13 @@ def main():
                 "shift_distance": int(shift_dist)
             }
             
-        # 7. Print output JSON to stdout
         output = {
             "success": True,
             "validated": True,
             "gatekeeper_score": round(avg_gate_prob, 4),
             "milestones": milestones_output
         }
-        print(json.dumps(output, indent=2))
+        write_and_print_output(output, save_json_path)
         
         # 8. Save diagnostic probabilities plot if requested
         if args.plot:
@@ -246,7 +256,7 @@ def main():
             "error": f"An error occurred during analysis: {str(e)}",
             "milestones": None
         }
-        print(json.dumps(output, indent=2))
+        write_and_print_output(output, save_json_path)
         return
 
 if __name__ == "__main__":
