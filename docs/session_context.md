@@ -25,6 +25,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Drafted [implementation_plan.md](file:///Users/sagar/.gemini/antigravity/brain/98a4998a-1fd4-4851-9ffc-b4d396267909/implementation_plan.md) mapping out development paths for `src/coaching_engine.py` and `analyze_swing.py`.
 - Conducted geometric coordinate analysis on 1,399 preprocessed GolfDB videos, formulating a 98.1% accurate DTL vs. FO camera view auto-detection logic (using normalized shoulder width and Z-depth difference at Address).
 - Changed the default camera view parameter in `analyze_swing.py` to `down-the-line` and logged the auto-detection task to the prioritized project backlog (`docs/backlog.md`).
+- Enhanced the inference video renderer with automatic crop clipping around swing boundaries (Address - 5 to Finish + 5), adjustable slow-motion playback (`--speed`), a top-right biomechanical scorecard metrics panel, and a bottom debug info bar showing view, handedness, pro matchup ratios, file info, and frames.
 
 ---
 

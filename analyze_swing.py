@@ -193,6 +193,86 @@ def write_and_print_output(output, save_json_path=""):
         with open(save_json_path, "w") as f:
             json.dump(output, f, indent=2)
 
+
+def draw_scorecard(frame, lines):
+    if not lines:
+        return
+    
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.5
+    thickness = 1
+    line_height = 20
+    padding = 10
+    
+    # Calculate dimensions
+    max_w = 0
+    for line in lines:
+        clean_line = line.replace(" [PASS]", "").replace(" [WARN]", "")
+        (w, h), _ = cv2.getTextSize(clean_line, font, font_scale, thickness)
+        if "[PASS]" in line:
+            w += cv2.getTextSize(" [PASS]", font, font_scale, thickness)[0][0]
+        elif "[WARN]" in line:
+            w += cv2.getTextSize(" [WARN]", font, font_scale, thickness)[0][0]
+        if w > max_w:
+            max_w = w
+            
+    box_width = max_w + (padding * 2)
+    box_height = (len(lines) * line_height) + (padding * 2)
+    
+    # Place in top-right corner
+    frame_h, frame_w, _ = frame.shape
+    x1 = frame_w - box_width - 20
+    y1 = 20
+    x2 = frame_w - 20
+    y2 = y1 + box_height
+    
+    # Draw semi-transparent background
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), -1)
+    cv2.rectangle(overlay, (x1, y1), (x2, y2), (200, 200, 200), 1)
+    cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
+    
+    # Draw text lines
+    for idx, line in enumerate(lines):
+        y_pos = y1 + padding + (idx * line_height) + 12
+        if "[PASS]" in line:
+            parts = line.split(" [PASS]")
+            cv2.putText(frame, parts[0], (x1 + padding, y_pos), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+            (w, _), _ = cv2.getTextSize(parts[0], font, font_scale, thickness)
+            cv2.putText(frame, " [PASS]", (x1 + padding + w, y_pos), font, font_scale, (0, 255, 0), thickness, cv2.LINE_AA)
+        elif "[WARN]" in line:
+            parts = line.split(" [WARN]")
+            cv2.putText(frame, parts[0], (x1 + padding, y_pos), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+            (w, _), _ = cv2.getTextSize(parts[0], font, font_scale, thickness)
+            cv2.putText(frame, " [WARN]", (x1 + padding + w, y_pos), font, font_scale, (0, 0, 255), thickness, cv2.LINE_AA)
+        elif line == "SWING METRICS":
+            cv2.putText(frame, line, (x1 + padding, y_pos), font, font_scale + 0.05, (0, 255, 255), thickness + 1, cv2.LINE_AA)
+        else:
+            cv2.putText(frame, line, (x1 + padding, y_pos), font, font_scale, (200, 200, 200), thickness, cv2.LINE_AA)
+
+
+def draw_debug_bar(frame, text):
+    frame_h, frame_w, _ = frame.shape
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = 0.4
+    thickness = 1
+    padding = 6
+    
+    (w, h), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+    
+    bar_height = h + baseline + (padding * 2)
+    y1 = frame_h - bar_height
+    y2 = frame_h
+    
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (0, y1), (frame_w, y2), (0, 0, 0), -1)
+    cv2.addWeighted(overlay, 0.6, frame, 0.4, 0, frame)
+    
+    x_pos = max(10, (frame_w - w) // 2)
+    y_pos = y1 + padding + h
+    cv2.putText(frame, text, (x_pos, y_pos), font, font_scale, (200, 200, 200), thickness, cv2.LINE_AA)
+
+
 def main():
     save_json_path = ""
     parser = argparse.ArgumentParser(description="End-to-End Golf Swing Analyzer Inference CLI")
@@ -200,16 +280,26 @@ def main():
     parser.add_argument("--gatekeeper-threshold", type=float, default=0.7346,
                         help="Confidence threshold for golf swing validation (default: 0.7346)")
     parser.add_argument("--plot", type=str, default="", help="Path to save diagnostic probabilities plot (.png)")
-    parser.add_argument("--save-video", type=str, default="", help="Path to save annotated skeleton overlay video (.mp4)")
+    parser.add_argument("--save-video", type=str, nargs="?", const="AUTO", default="",
+                        help="Path to save annotated skeleton overlay video (.mp4). If passed without value, saves next to input with suffix '_processed'")
     parser.add_argument("--save-json", type=str, default="", help="Path to save output JSON results")
     parser.add_argument("--save-report", type=str, default="", help="Path to save Markdown coaching report (.md)")
     parser.add_argument("--view", type=str, choices=["face-on", "down-the-line"], default="down-the-line",
                         help="Camera view perspective (default: down-the-line)")
     parser.add_argument("--handedness", type=str, choices=["auto", "right", "left"], default="auto",
                         help="Golfer handedness (default: auto)")
+    parser.add_argument("--speed", type=float, default=0.5,
+                        help="Speed factor for the output video playback (default: 0.5)")
     
     args = parser.parse_args()
     save_json_path = args.save_json
+
+    # Resolve AUTO name for save-video
+    save_video_path = args.save_video
+    if save_video_path == "AUTO":
+        base, ext = os.path.splitext(args.video_path)
+        save_video_path = f"{base}_processed.mp4"
+
 
     
     if not os.path.exists(args.video_path):
@@ -379,22 +469,99 @@ def main():
             plt.close()
             
         # 9. Save annotated skeleton overlay video if requested
-        if args.save_video:
-            os.makedirs(os.path.dirname(os.path.abspath(args.save_video)), exist_ok=True)
+        if save_video_path:
+            parent_dir = os.path.dirname(os.path.abspath(save_video_path))
+            if parent_dir:
+                os.makedirs(parent_dir, exist_ok=True)
             cap = cv2.VideoCapture(args.video_path)
             
+            # Determine crop frame range based on milestones
+            first_milestone = "Address"
+            last_milestone = "Finish"
+            if output.get("success", False) and milestones_output and first_milestone in milestones_output and last_milestone in milestones_output:
+                start_frame = max(0, milestones_output[first_milestone]["frame"] - 5)
+                end_frame = min(N - 1, milestones_output[last_milestone]["frame"] + 5)
+            else:
+                start_frame = 0
+                end_frame = N - 1
+                
             # Use 'mp4v' for writing mp4
             fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            out_writer = cv2.VideoWriter(args.save_video, fourcc, fps, (width, height))
+            out_fps = fps * args.speed
+            out_writer = cv2.VideoWriter(save_video_path, fourcc, out_fps, (width, height))
             
             # Create a reverse mapping of frame index to milestone name for fast display check
             frame_to_milestone = {meta["frame"]: name for name, meta in milestones_output.items()}
             
-            frame_idx = 0
+            # Construct scorecard lines once
+            scorecard_lines = []
+            if bio_results.get("success", False):
+                scorecard_lines.append("SWING METRICS")
+                scorecard_lines.append("---------------------")
+                
+                f1 = milestones_output["Address"]["frame"]
+                f3 = milestones_output["Top of Backswing"]["frame"]
+                f5 = milestones_output["Impact"]["frame"]
+                
+                issue_names = [issue["issue"] for issue in output.get("issues_detected", [])]
+                
+                def get_status_str(issue_name):
+                    return "[WARN]" if issue_name in issue_names else "[PASS]"
+                
+                # 1. Lead Arm Flex
+                arm_flex = output["biomechanical_metrics"].get("lead_arm_flex_at_top")
+                if arm_flex is not None:
+                    status = get_status_str("Bent Lead Arm at Top of Backswing")
+                    scorecard_lines.append(f"Lead Arm Flex (Top @ F{f3}): {arm_flex:.1f} deg {status}")
+                    
+                # 2. Spine Tilt Address
+                spine_addr = output["biomechanical_metrics"].get("spine_tilt_at_address")
+                if spine_addr is not None:
+                    status = get_status_str("Incorrect Spine Tilt at Address")
+                    scorecard_lines.append(f"Spine Tilt (Address @ F{f1}): {spine_addr:.1f} deg {status}")
+                    
+                # 3. Spine Tilt Loss
+                spine_loss = output["biomechanical_metrics"].get("spine_tilt_loss")
+                if spine_loss is not None:
+                    status = get_status_str("Loss of Spine Tilt at Top of Backswing")
+                    scorecard_lines.append(f"Spine Tilt Loss (Top vs Addr): {spine_loss:.1f} deg {status}")
+                    
+                # 4. Knee Flex Address
+                knee_flex = output["biomechanical_metrics"].get("lead_knee_flex_at_address")
+                if knee_flex is not None:
+                    status = get_status_str("Incorrect Knee Flex at Address")
+                    scorecard_lines.append(f"Knee Flex (Address @ F{f1}): {knee_flex:.1f} deg {status}")
+                    
+                # Face-On Specifics
+                if args.view == "face-on":
+                    hip_sway = output["biomechanical_metrics"].get("hip_sway_ratio")
+                    if hip_sway is not None:
+                        status = get_status_str("Excessive Lateral Hip Sway at Top of Backswing")
+                        scorecard_lines.append(f"Hip Sway (Top @ F{f3}): {hip_sway*100:.1f}% {status}")
+                        
+                    head_bob = output["biomechanical_metrics"].get("head_bob_ratio")
+                    if head_bob is not None:
+                        status = get_status_str("Excessive Vertical Head Movement")
+                        scorecard_lines.append(f"Head Bob (Top/Imp @ F{f3}/F{f5}): {head_bob*100:.1f}% {status}")
+            
+            # Construct bottom debug info text
+            filename = os.path.basename(args.video_path)
+            view_str = args.view.upper()
+            handedness_str = output.get("handedness", "UNKNOWN").upper()
+            pro_name = output.get("matched_pro", "NONE")
+            user_ratio = output.get("user_arm_to_torso_ratio", 0.0)
+            pro_ratio = output.get("matched_pro_ratio", 0.0)
+            debug_text = f"FILE: {filename} | VIEW: {view_str} | HANDEDNESS: {handedness_str} | PRO: {pro_name} (User: {user_ratio:.3f} vs Pro: {pro_ratio:.3f}) | CLIP: F{start_frame}-F{end_frame}/{N}"
+            
+            # Seek reader to start frame
+            if start_frame > 0:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+            frame_idx = start_frame
+            
             active_label = ""
             label_cooldown = 0
             
-            while True:
+            while frame_idx <= end_frame:
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -411,17 +578,14 @@ def main():
                 # 3. Draw transient milestone label overlay if active
                 if label_cooldown > 0 and active_label:
                     text = f"MILESTONE: {active_label}"
-                    # Font settings
                     font = cv2.FONT_HERSHEY_DUPLEX
                     font_scale = 1.0
                     thickness = 2
                     (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
                     
-                    # Draw a nice semi-transparent black background box for readability
                     bx = 20
                     by = height - 100
                     cv2.rectangle(frame, (bx - 10, by - th - 10), (bx + tw + 10, by + baseline + 10), (0, 0, 0), -1)
-                    # Text overlay
                     cv2.putText(frame, text, (bx, by), font, font_scale, (0, 255, 0), thickness, cv2.LINE_AA)
                     
                     label_cooldown -= 1
@@ -434,6 +598,12 @@ def main():
                 (stw, sth), sbaseline = cv2.getTextSize(status_text, font, font_scale, thickness)
                 cv2.rectangle(frame, (10, 10), (20 + stw, 20 + sth + sbaseline), (0, 0, 0), -1)
                 cv2.putText(frame, status_text, (15, 20 + sth), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
+                
+                # 5. Draw scorecard overlay in top-right
+                draw_scorecard(frame, scorecard_lines)
+                
+                # 6. Draw debug bar at absolute bottom
+                draw_debug_bar(frame, debug_text)
                 
                 out_writer.write(frame)
                 frame_idx += 1

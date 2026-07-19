@@ -89,4 +89,6 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Accomplishment**: Tested unsupervised outlier detection on 1,642 UCF videos. Achieved AUC PR of 0.6802 and optimal F1-score of 0.6568.
 - [x] **Biomechanical Coaching Rules Engine & Pro Matchmaker**
   - **Accomplishment**: Built a view-dependent biomechanical evaluation engine and integrated it into the inference pipeline. Added auto-handedness detection, a pro matchmaker against precalculated profiles, and automated Markdown coaching reports with comparison tables and drills.
+- [x] **Clipped Slow-Motion Swing Annotator & Video Scorecard**
+  - **Accomplishment**: Enhanced `analyze_swing.py` to clip output videos precisely between milestone boundaries (Address - 5 to Finish + 5), support adjustable slow-motion playback speed, draw a biomechanics scorecard panel in the top-right, and display a session metadata debug bar at the bottom.
 

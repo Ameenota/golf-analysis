@@ -65,3 +65,6 @@
 - Analyzed coordinate geometric features on the preprocessed GolfDB dataset (1,399 videos) to distinguish Down-The-Line (DTL) vs. Face-On (FO) camera views, establishing a hybrid 2D/3D heuristic with 98.1% accuracy.
 - Changed the default camera view parameter in `analyze_swing.py` to `down-the-line`.
 - Appended the auto view-detection enhancement task to the prioritized project backlog (`docs/backlog.md`).
+- Modified `analyze_swing.py` to support automatic crop clipping around swing milestone boundaries (Address - 5 to Finish + 5).
+- Integrated adjustable slow-motion playback speed parameter (`--speed`) and added support for automatic processed output naming (`_processed.mp4`).
+- Implemented a top-right biomechanics scorecard panel showing metrics, measurements, frames, limits, and colored PASS/WARN tags, along with a bottom debug bar displaying session metadata.
