@@ -56,4 +56,10 @@
 - Updated `analyze_swing.py` to support a `--save-json` parameter for writing the outputs directly to file and resolved a nested block syntax error.
 - Created `scratch/process_r_videos.py` to process unseen QuickTime `.mov`/`.MOV` files in `data/r-videos/`, validating and producing JSON outputs and skeletal overlay `.mov` annotated clips.
 - Logged the visual milestone log overlay enhancement (Option B) to the low priority backlog.
-- Updated the next session's Action Plan in the session context document.
+- Created `src/coaching_engine.py` implementing 2D joint angle math, view-dependent auto-handedness detection, pro golfer ratio matching, and biomechanical rules (Lead Arm Flex, Spine Tilt, Knee Flex, Lateral Hip Sway, and vertical head bobbing stability).
+- Integrated the coaching engine into the `analyze_swing.py` inference script, adding command-line parameters (`--view`, `--handedness`, `--save-report`) and support for automated Markdown report exports.
+- Updated `docs/product.md` with intuitive explainability analogies (Compass, Spinning Wheel, Door Hinge, Wall, and Dance Duet).
+- Added `scratch/verify_coaching.py` to automate end-to-end integration verification, successfully validating Face-On and Down-The-Line pipeline execution.
+- Expanded coaching reports to include exact measured frames, explanations of why each metric matters, what the golfer loses, and side-by-side comparison tables against matched pro golfers' actual reference values.
+- Updated `PRO_DATABASE` in `src/coaching_engine.py` to store precalculated biomechanical reference metrics for all 5 professional golfers.
+

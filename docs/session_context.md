@@ -20,6 +20,9 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Implemented and validated the end-to-end inference script [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with plot saving, skeletal video overlay, and file JSON caching.
 - Added a batch validation utility [scratch/verify_pipeline.py](file:///Users/sagar/Documents/ML/golf-analysis/scratch/verify_pipeline.py) achieving 2.95 frames overall MAE.
 - Processed 6 unseen QuickTime MOV videos in `data/r-videos/`, producing local JSON outputs and skeletal overlay `.mov` annotated clips using `scratch/process_r_videos.py`.
+- Finalized design specifications for the Biomechanical Rules Engine and Pro Matchmaker during a `/grill-me` session.
+- Created scratch script `/Users/sagar/.gemini/antigravity/brain/98a4998a-1fd4-4851-9ffc-b4d396267909/scratch/calculate_pro_ratios.py` to extract actual arm-to-torso ratios for 5 iconic professional players (Tiger Woods: 0.862, Sandra Gal: 1.050, Steve Stricker: 1.092, Greg Norman: 1.193, Cristie Kerr: 1.198).
+- Drafted [implementation_plan.md](file:///Users/sagar/.gemini/antigravity/brain/98a4998a-1fd4-4851-9ffc-b4d396267909/implementation_plan.md) mapping out development paths for `src/coaching_engine.py` and `analyze_swing.py`.
 
 ---
 
@@ -34,7 +37,8 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 
 ## Action Plan for Next Session
 
-1. **Biomechanical Metrics & Angles**: Code the calculations for spine tilt, knee flex, and lead arm flex at their corresponding milestone frames, integrating warnings if thresholds are exceeded.
-2. **Visual Overlay Refinement (Option B)**: Implement the persistent milestone list corner-overlay to clean up transient visual label mismatches when reviewing slow-motion videos.
-3. **Synchronized Video Warping**: Create a blueprint/script to warp the user video and pro template video so their detected milestones match frame-for-frame side-by-side.
+1. **Synchronized Video Stitcher (Day 5)**: Develop `src/visual_stitcher.py` to warp the timelines of the user video and the matched pro video frame-by-frame based on the 8 detected milestones.
+2. **Biomechanical Overlays (Day 5)**: Render the user's measured metrics (e.g. lead arm angle, hip sway) and skeletal lines dynamically on both frames of the side-by-side video.
+3. **Visual Overlay Refinement**: Implement the persistent milestone log in the corner of the output video to track milestones as they are hit during slow-motion playback.
+
 

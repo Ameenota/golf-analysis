@@ -26,12 +26,14 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 
 ## ⚡ Medium Priority
 
-### 📐 Biomechanical Rules Engine
-- [ ] **Additional 2D Swing Metrics**
+### 📐 Biomechanical Rules Engine (Completed)
+- [x] **Additional 2D Swing Metrics**
   - **Idea**: Calculate biomechanical feedback indicators:
-    - **Spine Tilt**: Measured relative to the vertical axis at Address.
-    - **Knee Flex**: To detect hip sway or lunging during the downswing.
-    - **Club Shaft Angle**: To identify casting or early release before Impact.
+    - **Spine Tilt**: Measured lateral tilt at Address/Top and loss of posture (tilt change).
+    - **Knee Flex**: Soft knees flex check at Address.
+    - **Lead Arm Flex**: Checked straightness (>= 160 degrees) at Top of Backswing.
+    - **Lateral Hip Sway**: Slide displacement limit check (Face-On only).
+    - **Vertical Head Stability**: Bobbing/dipping vertical displacement check (Face-On only).
 
 ### 🧹 Data Quality & Sanitization
 - [ ] **Programmatic Label Validation**
@@ -39,6 +41,7 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
     - Chronological consistency ($T_1 < T_2 < \dots < T_8$).
     - Relative frame range boundary checks.
     - Physical downswing duration validation (must be between 6 and 12 frames at 30 FPS).
+
 
 ---
 
@@ -81,3 +84,6 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Accomplishment**: Reached AUC PR of 0.7904, Max F1-score of 0.8115, and 91.6% rejection rate of non-golf at target recall threshold of 0.20.
 - [x] **Unsupervised Golf Swing Gatekeeper (Isolation Forest)**
   - **Accomplishment**: Tested unsupervised outlier detection on 1,642 UCF videos. Achieved AUC PR of 0.6802 and optimal F1-score of 0.6568.
+- [x] **Biomechanical Coaching Rules Engine & Pro Matchmaker**
+  - **Accomplishment**: Built a view-dependent biomechanical evaluation engine and integrated it into the inference pipeline. Added auto-handedness detection, a pro matchmaker against precalculated profiles, and automated Markdown coaching reports with comparison tables and drills.
+
