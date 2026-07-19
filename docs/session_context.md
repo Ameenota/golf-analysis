@@ -26,6 +26,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Conducted geometric coordinate analysis on 1,399 preprocessed GolfDB videos, formulating a 98.1% accurate DTL vs. FO camera view auto-detection logic (using normalized shoulder width and Z-depth difference at Address).
 - Changed the default camera view parameter in `analyze_swing.py` to `down-the-line` and logged the auto-detection task to the prioritized project backlog (`docs/backlog.md`).
 - Enhanced the inference video renderer with automatic crop clipping around swing boundaries (Address - 5 to Finish + 5), adjustable slow-motion playback (`--speed`), a top-right biomechanical scorecard metrics panel, and a bottom debug info bar showing view, handedness, pro matchup ratios, file info, and frames.
+- Created [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) and integrated it into `analyze_swing.py` to compile a side-by-side synchronized dashboard video (Alternative B layout) containing the user, the matched pro, a dynamic milestone tracker log, and metrics scoreboard.
 
 ---
 
@@ -40,17 +41,15 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 
 ## Action Plan for Next Session
 
-1. **Synchronized Video Stitcher (Day 5)**: Develop `src/visual_stitcher.py` to warp the timelines of the user video and the matched pro video frame-by-frame based on the 8 detected milestones.
-2. **Biomechanical Overlays (Day 5)**: Render the user's measured metrics (e.g. lead arm angle, hip sway) and skeletal lines dynamically on both frames of the side-by-side video.
-3. **Visual Overlay Refinement**: Implement the persistent milestone log in the corner of the output video to track milestones as they are hit during slow-motion playback.
-4. **Integration Test Suite Setup**:
+1. **Integration Test Suite Setup**:
    - Write pytest unit tests using the Golden Coordinates (Option A) to verify the logic pipeline (XGBoost validation, Keras LSTM predictions, DP alignment, coaching metrics, and pro matchmaking).
    - Add temporary local videos to verify OpenCV decoding and MediaPipe landmarks extraction.
-5. **Firebase Storage Asset Downloader (Option C preparation)**:
+2. **Firebase Storage Asset Downloader**:
    - Determine optimal ffmpeg compression parameters to keep test videos under 200 KB.
    - Collect both golf and non-golf test videos.
    - Setup a Firebase Storage bucket to host custom ML models and media assets.
    - Develop `src/utils/downloader.py` to automatically fetch and cache missing models and media on demand.
+
 
 
 
