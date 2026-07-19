@@ -43,5 +43,14 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 1. **Synchronized Video Stitcher (Day 5)**: Develop `src/visual_stitcher.py` to warp the timelines of the user video and the matched pro video frame-by-frame based on the 8 detected milestones.
 2. **Biomechanical Overlays (Day 5)**: Render the user's measured metrics (e.g. lead arm angle, hip sway) and skeletal lines dynamically on both frames of the side-by-side video.
 3. **Visual Overlay Refinement**: Implement the persistent milestone log in the corner of the output video to track milestones as they are hit during slow-motion playback.
+4. **Integration Test Suite Setup**:
+   - Write pytest unit tests using the Golden Coordinates (Option A) to verify the logic pipeline (XGBoost validation, Keras LSTM predictions, DP alignment, coaching metrics, and pro matchmaking).
+   - Add temporary local videos to verify OpenCV decoding and MediaPipe landmarks extraction.
+5. **Firebase Storage Asset Downloader (Option C preparation)**:
+   - Determine optimal ffmpeg compression parameters to keep test videos under 200 KB.
+   - Collect both golf and non-golf test videos.
+   - Setup a Firebase Storage bucket to host custom ML models and media assets.
+   - Develop `src/utils/downloader.py` to automatically fetch and cache missing models and media on demand.
+
 
 

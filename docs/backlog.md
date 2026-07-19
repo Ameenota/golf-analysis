@@ -45,8 +45,17 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Idea**: Dynamically detect if an incoming video is Down-The-Line or Face-On.
   - **Approach**: Implement the hybrid 2D/3D heuristic (`norm_sh_width > 0.45` -> FO, `< 0.20` -> DTL, fallback to `sh_z_diff <= 0.21` -> FO) which achieved **98.1% accuracy** on the GolfDB dataset. Add a `--view auto` CLI option in `analyze_swing.py`.
 
+### ☁️ Cloud Infrastructure & Integration Testing
+- [ ] **On-Demand Test Asset & Model Downloader**
+  - **Idea**: Implement an auto-downloader for test videos, coordinate CSVs, and trained custom ML models using Firebase Cloud Storage (GCS) to prepare for Firebase deployment.
+  - **Action Items**:
+    - Figure out how to compress test videos (using ffmpeg) to their lowest functional resolution and bitrate (e.g., 320x240, 15 FPS) to keep footprint minimal.
+    - Gather a representative set of test videos, including valid **golf swing** videos (DTL and FO perspectives) and invalid **non-golf** videos to verify XGBoost gatekeeper rejection logic.
+    - Upload trained models (`lstm_phase_model.keras`, `golf_binary_detector.json`) and test videos to a Firebase Cloud Storage bucket.
+    - Write a helper script (`src/utils/downloader.py`) to auto-fetch and cache missing models and media assets locally on demand during testing or startup.
 
 ---
+
 
 ## 💤 Low Priority / Future Enhancements
 

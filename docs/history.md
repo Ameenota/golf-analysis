@@ -71,3 +71,5 @@
 - Implemented post-processing wrist-height heuristic adjustments for `Top of Backswing` (highest hand Y-position) and `Impact` (lowest hand Y-position) to correct sequence locator errors due to tracking lag and tempo.
 - Bounded heuristic searches to chronological segments (`[Address + 1, Downswing - 1]` and `[Downswing + 1, Release - 1]`) to guarantee mathematical milestone order consistency.
 - Fixed a Down-The-Line (DTL) handedness detection bug in `src/coaching_engine.py` where the $x$-coordinate check was inverted, causing right-handed golfers to be classified as left-handed (which incorrectly evaluated their trail arm as the lead arm and triggered false bent lead arm warnings).
+- Added a Firebase/GCS Cloud Storage test asset downloader task to the backlog to research ffmpeg video compression, gather test video sets (golf/non-golf), and cache custom models dynamically.
+- Updated the next-session action plan to track integration test suite development (Option A & B) and Cloud Storage downloader setup.
