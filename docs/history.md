@@ -75,3 +75,5 @@
 - Updated the next-session action plan to track integration test suite development (Option A & B) and Cloud Storage downloader setup.
 - Created `src/visual_stitcher.py` containing the synchronized dashboard video compilation logic (warping, padding, milestone tracker, and metrics scoreboard).
 - Integrated the visual stitcher into `analyze_swing.py` with dynamic landmark extraction on matched pro swings (instantiating a fresh `GolfVideoProcessor` instance to reset MediaPipe's monotonic timestamps).
+- Implemented a new follow-through spine angle retention rule (forward spine tilt >= 20 degrees for Down-The-Line view) in `src/coaching_engine.py` to detect early extension/posture loss.
+- Refined the synchronized dashboard in `src/visual_stitcher.py` to dynamically highlight active metrics at their corresponding milestones during video playback, and increased the contrast of inactive metric rows to light gray.

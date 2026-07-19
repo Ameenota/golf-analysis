@@ -13,6 +13,7 @@ PRO_DATABASE = [
             "lead_arm_flex_at_top": 172.5,
             "spine_tilt_at_address": 24.7,
             "spine_tilt_loss": 1.7,
+            "spine_tilt_at_follow": 24.7,
             "lead_knee_flex_at_address": 157.8,
             "hip_sway_ratio": None,
             "head_bob_ratio": None
@@ -96,6 +97,11 @@ COACHING_DB = {
         "issue": "Loss of Spine Tilt at Top of Backswing",
         "threshold": "Top tilt within 3° of Address tilt",
         "drill": "Spike Angle Drill: Keep your chest angled down towards the ball at the top of your turn instead of standing up or lunging forward."
+    },
+    "spine_tilt_follow": {
+        "issue": "Loss of Posture at Follow-Through",
+        "threshold": "Forward Spine Tilt >= 20° (DTL Only)",
+        "drill": "Wall Butt Drill: Stand with your trail hip (right hip for righties) touching a wall at Address. Practice swinging through to the follow-through, keeping your hip against the wall to maintain your forward bend."
     },
     "knee_flex_address": {
         "issue": "Incorrect Knee Flex at Address",
@@ -209,7 +215,8 @@ def analyze_swing_biomechanics(df, milestones, view, handedness="auto", custom_t
         "knee_flex_dtl_min": 150.0,
         "knee_flex_dtl_max": 165.0,
         "hip_sway_limit": 0.15,
-        "head_bob_limit": 0.15
+        "head_bob_limit": 0.15,
+        "spine_tilt_follow_min": 20.0
     }
     if custom_thresholds:
         thresholds.update(custom_thresholds)
@@ -284,6 +291,19 @@ def analyze_swing_biomechanics(df, milestones, view, handedness="auto", custom_t
         issue_info = COACHING_DB["spine_tilt_loss"].copy()
         issue_info["measured"] = f"Shift of {tilt_diff:.1f}°"
         issues.append(issue_info)
+        
+    # Rule B2: Spine Tilt at Follow-Through (F7)
+    f7_idx = milestones.get("Follow-Through", {}).get("frame")
+    if f7_idx is not None and f7_idx < len(df):
+        row_follow = df.iloc[f7_idx]
+        spine_tilt_follow = row_follow["torso_angle_deg"]
+        metrics["spine_tilt_at_follow"] = spine_tilt_follow
+        
+        if view == "down-the-line":
+            if spine_tilt_follow < thresholds["spine_tilt_follow_min"]:
+                issue_info = COACHING_DB["spine_tilt_follow"].copy()
+                issue_info["measured"] = f"{spine_tilt_follow:.1f}°"
+                issues.append(issue_info)
         
     # Rule C: Knee Flex at Address (F1)
     addr_lead_hip = [row_address[f"smooth_{lead_prefix}hip_x"], row_address[f"smooth_{lead_prefix}hip_y"]]
