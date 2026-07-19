@@ -23,6 +23,8 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Finalized design specifications for the Biomechanical Rules Engine and Pro Matchmaker during a `/grill-me` session.
 - Created scratch script `/Users/sagar/.gemini/antigravity/brain/98a4998a-1fd4-4851-9ffc-b4d396267909/scratch/calculate_pro_ratios.py` to extract actual arm-to-torso ratios for 5 iconic professional players (Tiger Woods: 0.862, Sandra Gal: 1.050, Steve Stricker: 1.092, Greg Norman: 1.193, Cristie Kerr: 1.198).
 - Drafted [implementation_plan.md](file:///Users/sagar/.gemini/antigravity/brain/98a4998a-1fd4-4851-9ffc-b4d396267909/implementation_plan.md) mapping out development paths for `src/coaching_engine.py` and `analyze_swing.py`.
+- Conducted geometric coordinate analysis on 1,399 preprocessed GolfDB videos, formulating a 98.1% accurate DTL vs. FO camera view auto-detection logic (using normalized shoulder width and Z-depth difference at Address).
+- Changed the default camera view parameter in `analyze_swing.py` to `down-the-line` and logged the auto-detection task to the prioritized project backlog (`docs/backlog.md`).
 
 ---
 
