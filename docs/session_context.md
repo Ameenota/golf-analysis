@@ -41,7 +41,10 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Fixed physical heuristics in `analyze_swing.py` to search correct chronological windows (Address to Top for Top; Top to Impact for Impact).
   - Updated `src/coaching_engine.py` to query correct aligned keys (Class 4 for Top metrics, Class 6 for Impact metrics, Class 7 for Follow-Through metrics).
   - Confirmed the fix by running `scratch/verify_pipeline.py` which evaluated with an overall MAE of **3.26 frames**, and regenerated all 7 holdout reports/videos.
-  - Logged the DTL handedness detection view-inversion bug to `docs/backlog.md`.
+- Logged the view-dependent DTL handedness check task to `docs/backlog.md`.
+- Implemented `layers.Masking(mask_value=0.0)` with dynamic input shapes `(None, 66)` in `notebooks/lstm_keras.ipynb` and retrained `models/lstm_phase_model.keras`.
+- Refactored `analyze_swing.py` to stream single-video feature sequences `(1, N, 66)` directly into the LSTM model without 1,280 zero-padding.
+- Executed diagnostic tests confirming **100% mathematical padding invariance** (0.00000000 max probability diff) and ran `scratch/verify_pipeline.py`, dropping overall pipeline MAE from 3.26 frames to **2.71 frames**.
 
 
 ---

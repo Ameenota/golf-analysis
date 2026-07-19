@@ -384,21 +384,13 @@ def main():
             
         x_seq = df_features[base_features].values.astype(np.float32)
         
-        # Pad with 0.0 to 1280
-        max_len = 1280
-        if N < max_len:
-            pad_len = max_len - N
-            x_padded = np.pad(x_seq, ((0, pad_len), (0, 0)), mode="constant", constant_values=0.0)
-        else:
-            x_padded = x_seq[:max_len]
-            
-        x_batch = np.expand_dims(x_padded, axis=0) # (1, 1280, 66)
+        # Pass (1, N, 66) directly to the masked LSTM model
+        x_batch = np.expand_dims(x_seq, axis=0) # (1, N, 66)
         
         # Run prediction
         logits = lstm_model(x_batch, training=False)
         probs_lstm = tf.nn.softmax(logits, axis=-1)
-        probs_lstm = tf.squeeze(probs_lstm, axis=0).numpy() # (1280, 9)
-        v_probs = probs_lstm[:N, :] # (N, 9)
+        v_probs = tf.squeeze(probs_lstm, axis=0).numpy() # (N, 9)
         
         # 6. DP Monotonic Chronological Alignment
         milestone_frames = compute_monotonic_alignment(v_probs)
