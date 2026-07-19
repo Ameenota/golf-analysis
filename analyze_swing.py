@@ -15,6 +15,7 @@ from src.feature_engineer import engineer_sliding_window, HIGH_MOVEMENT_JOINTS
 from src.alignment import compute_monotonic_alignment
 from src.visualizer import draw_skeleton
 from src.coaching_engine import analyze_swing_biomechanics
+from src.visual_stitcher import create_synchronized_dashboard
 
 MILESTONE_NAMES = [
     "Address",
@@ -514,148 +515,118 @@ def main():
             plt.savefig(args.plot, dpi=150)
             plt.close()
             
-        # 9. Save annotated skeleton overlay video if requested
+        # 9. Save         # 9. Save annotated skeleton overlay video if requested
         if save_video_path:
             parent_dir = os.path.dirname(os.path.abspath(save_video_path))
             if parent_dir:
                 os.makedirs(parent_dir, exist_ok=True)
-            cap = cv2.VideoCapture(args.video_path)
-            
-            # Determine crop frame range based on milestones
-            first_milestone = "Address"
-            last_milestone = "Finish"
-            if output.get("success", False) and milestones_output and first_milestone in milestones_output and last_milestone in milestones_output:
-                start_frame = max(0, milestones_output[first_milestone]["frame"] - 5)
-                end_frame = min(N - 1, milestones_output[last_milestone]["frame"] + 5)
-            else:
-                start_frame = 0
-                end_frame = N - 1
                 
-            # Use 'mp4v' for writing mp4
-            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-            out_fps = fps * args.speed
-            out_writer = cv2.VideoWriter(save_video_path, fourcc, out_fps, (width, height))
-            
-            # Create a reverse mapping of frame index to milestone name for fast display check
-            frame_to_milestone = {meta["frame"]: name for name, meta in milestones_output.items()}
-            
-            # Construct scorecard lines once
-            scorecard_lines = []
+            # If we successfully ran coaching analysis and matched a pro, run the stitcher!
             if bio_results.get("success", False):
-                scorecard_lines.append("SWING METRICS")
-                scorecard_lines.append("---------------------")
+                pro_video_id = bio_results["matched_pro_video_id"]
+                project_root = os.path.dirname(os.path.abspath(__file__))
+                pro_video_path = os.path.join(project_root, "data/videos_160/videos_160", f"{pro_video_id}.mp4")
                 
-                f1 = milestones_output["Address"]["frame"]
-                f3 = milestones_output["Top of Backswing"]["frame"]
-                f5 = milestones_output["Impact"]["frame"]
+                if not os.path.exists(pro_video_path):
+                    raise FileNotFoundError(f"Matched professional swing video not found at: {pro_video_path}")
                 
-                issue_names = [issue["issue"] for issue in output.get("issues_detected", [])]
+                print(f"Matched professional: {bio_results['matched_pro']} (ID: {pro_video_id})")
+                print("Running landmark extraction and pipeline on pro video...")
                 
-                def get_status_str(issue_name):
-                    return "[WARN]" if issue_name in issue_names else "[PASS]"
+                # Run landmarks on pro video using a fresh processor instance to reset MediaPipe timestamps
+                pro_processor = GolfVideoProcessor()
+                df_pro = pro_processor.process_video(pro_video_path)
+                pro_processor.close()
+                df_features_pro = engineer_sliding_window(df_pro, joints=HIGH_MOVEMENT_JOINTS)
                 
-                # 1. Lead Arm Flex
-                arm_flex = output["biomechanical_metrics"].get("lead_arm_flex_at_top")
-                if arm_flex is not None:
-                    status = get_status_str("Bent Lead Arm at Top of Backswing")
-                    scorecard_lines.append(f"Lead Arm Flex (Top @ F{f3}): {arm_flex:.1f} deg {status}")
+                # LSTM sequence mapping on pro
+                x_seq_pro = df_features_pro[base_features].values.astype(np.float32)
+                N_pro = len(df_pro)
+                if N_pro < max_len:
+                    pad_len_pro = max_len - N_pro
+                    x_padded_pro = np.pad(x_seq_pro, ((0, pad_len_pro), (0, 0)), mode="constant", constant_values=0.0)
+                else:
+                    x_padded_pro = x_seq_pro[:max_len]
+                
+                x_batch_pro = np.expand_dims(x_padded_pro, axis=0)
+                
+                logits_pro = lstm_model(x_batch_pro, training=False)
+                probs_lstm_pro = tf.nn.softmax(logits_pro, axis=-1)
+                probs_lstm_pro = tf.squeeze(probs_lstm_pro, axis=0).numpy()
+                v_probs_pro = probs_lstm_pro[:N_pro, :]
+                
+                # DP alignment for pro
+                milestone_frames_pro = compute_monotonic_alignment(v_probs_pro)
+                
+                milestones_output_pro = {}
+                for idx, name in enumerate(MILESTONE_NAMES):
+                    c = idx + 1
+                    pred_frame_pro = milestone_frames_pro[idx]
+                    raw_peak_pro = int(np.argmax(v_probs_pro[:, c]))
                     
-                # 2. Spine Tilt Address
-                spine_addr = output["biomechanical_metrics"].get("spine_tilt_at_address")
-                if spine_addr is not None:
-                    status = get_status_str("Incorrect Spine Tilt at Address")
-                    scorecard_lines.append(f"Spine Tilt (Address @ F{f1}): {spine_addr:.1f} deg {status}")
+                    milestones_output_pro[name] = {
+                        "frame": int(pred_frame_pro),
+                        "raw_peak_frame": raw_peak_pro
+                    }
                     
-                # 3. Spine Tilt Loss
-                spine_loss = output["biomechanical_metrics"].get("spine_tilt_loss")
-                if spine_loss is not None:
-                    status = get_status_str("Loss of Spine Tilt at Top of Backswing")
-                    scorecard_lines.append(f"Spine Tilt Loss (Top vs Addr): {spine_loss:.1f} deg {status}")
-                    
-                # 4. Knee Flex Address
-                knee_flex = output["biomechanical_metrics"].get("lead_knee_flex_at_address")
-                if knee_flex is not None:
-                    status = get_status_str("Incorrect Knee Flex at Address")
-                    scorecard_lines.append(f"Knee Flex (Address @ F{f1}): {knee_flex:.1f} deg {status}")
-                    
-                # Face-On Specifics
-                if args.view == "face-on":
-                    hip_sway = output["biomechanical_metrics"].get("hip_sway_ratio")
-                    if hip_sway is not None:
-                        status = get_status_str("Excessive Lateral Hip Sway at Top of Backswing")
-                        scorecard_lines.append(f"Hip Sway (Top @ F{f3}): {hip_sway*100:.1f}% {status}")
+                # Apply heuristics to pro
+                try:
+                    down_p = milestones_output_pro["Downswing"]["frame"]
+                    rel_p = milestones_output_pro["Release"]["frame"]
+                    if rel_p - down_p > 1:
+                        wrist_y_p = (df_pro.iloc[down_p+1:rel_p-1]["smooth_left_wrist_y"] + df_pro.iloc[down_p+1:rel_p-1]["smooth_right_wrist_y"]) / 2.0
+                        milestones_output_pro["Impact"]["frame"] = int(wrist_y_p.idxmax())
                         
-                    head_bob = output["biomechanical_metrics"].get("head_bob_ratio")
-                    if head_bob is not None:
-                        status = get_status_str("Excessive Vertical Head Movement")
-                        scorecard_lines.append(f"Head Bob (Top/Imp @ F{f3}/F{f5}): {head_bob*100:.1f}% {status}")
-            
-            # Construct bottom debug info text
-            filename = os.path.basename(args.video_path)
-            view_str = args.view.upper()
-            handedness_str = output.get("handedness", "UNKNOWN").upper()
-            pro_name = output.get("matched_pro", "NONE")
-            user_ratio = output.get("user_arm_to_torso_ratio", 0.0)
-            pro_ratio = output.get("matched_pro_ratio", 0.0)
-            debug_text = f"FILE: {filename} | VIEW: {view_str} | HANDEDNESS: {handedness_str} | PRO: {pro_name} (User: {user_ratio:.3f} vs Pro: {pro_ratio:.3f}) | CLIP: F{start_frame}-F{end_frame}/{N}"
-            
-            # Seek reader to start frame
-            if start_frame > 0:
-                cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-            frame_idx = start_frame
-            
-            active_label = ""
-            label_cooldown = 0
-            
-            while frame_idx <= end_frame:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                    
-                # 1. Draw Skeleton Overlay
-                row = df.iloc[frame_idx]
-                draw_skeleton(frame, row, prefix="smooth_")
+                    addr_p = milestones_output_pro["Address"]["frame"]
+                    down_p = milestones_output_pro["Downswing"]["frame"]
+                    if down_p - addr_p > 1:
+                        wrist_y_p = (df_pro.iloc[addr_p+1:down_p-1]["smooth_left_wrist_y"] + df_pro.iloc[addr_p+1:down_p-1]["smooth_right_wrist_y"]) / 2.0
+                        milestones_output_pro["Top of Backswing"]["frame"] = int(wrist_y_p.idxmin())
+                except Exception:
+                    pass
                 
-                # 2. Check if a milestone was reached on this frame
-                if frame_idx in frame_to_milestone:
-                    active_label = frame_to_milestone[frame_idx].upper()
-                    label_cooldown = 10 # Display label for 10 frames
+                # Call synchronized visual stitcher
+                create_synchronized_dashboard(
+                    user_video_path=args.video_path,
+                    pro_video_path=pro_video_path,
+                    df_user=df,
+                    df_pro=df_pro,
+                    milestones_user=milestones_output,
+                    milestones_pro=milestones_output_pro,
+                    bio_results=bio_results,
+                    output_path=save_video_path,
+                    speed=args.speed
+                )
+            else:
+                # Simple fallback to user-only rendering if pro matching failed
+                print("Pro matching failed. Rendering user skeleton video only.")
+                cap = cv2.VideoCapture(args.video_path)
+                first_milestone = "Address"
+                last_milestone = "Finish"
+                if output.get("success", False) and milestones_output and first_milestone in milestones_output and last_milestone in milestones_output:
+                    start_frame = max(0, milestones_output[first_milestone]["frame"] - 5)
+                    end_frame = min(N - 1, milestones_output[last_milestone]["frame"] + 5)
+                else:
+                    start_frame = 0
+                    end_frame = N - 1
                     
-                # 3. Draw transient milestone label overlay if active
-                if label_cooldown > 0 and active_label:
-                    text = f"MILESTONE: {active_label}"
-                    font = cv2.FONT_HERSHEY_DUPLEX
-                    font_scale = 1.0
-                    thickness = 2
-                    (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+                out_fps = fps * args.speed
+                out_writer = cv2.VideoWriter(save_video_path, fourcc, out_fps, (width, height))
+                
+                if start_frame > 0:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+                frame_idx = start_frame
+                
+                while frame_idx <= end_frame:
+                    ret, frame = cap.read()
+                    if not ret: break
+                    draw_skeleton(frame, df.iloc[frame_idx], prefix="smooth_")
+                    out_writer.write(frame)
+                    frame_idx += 1
                     
-                    bx = 20
-                    by = height - 100
-                    cv2.rectangle(frame, (bx - 10, by - th - 10), (bx + tw + 10, by + baseline + 10), (0, 0, 0), -1)
-                    cv2.putText(frame, text, (bx, by), font, font_scale, (0, 255, 0), thickness, cv2.LINE_AA)
-                    
-                    label_cooldown -= 1
-                    
-                # 4. Status Bar Overlay at top
-                status_text = f"Golf Validated (Score: {avg_gate_prob:.3f}) | Frame: {frame_idx} | Time: {frame_idx/fps:.2f}s"
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                font_scale = 0.6
-                thickness = 1
-                (stw, sth), sbaseline = cv2.getTextSize(status_text, font, font_scale, thickness)
-                cv2.rectangle(frame, (10, 10), (20 + stw, 20 + sth + sbaseline), (0, 0, 0), -1)
-                cv2.putText(frame, status_text, (15, 20 + sth), font, font_scale, (255, 255, 255), thickness, cv2.LINE_AA)
-                
-                # 5. Draw scorecard overlay in top-right
-                draw_scorecard(frame, scorecard_lines)
-                
-                # 6. Draw debug bar at absolute bottom
-                draw_debug_bar(frame, debug_text)
-                
-                out_writer.write(frame)
-                frame_idx += 1
-                
-            cap.release()
-            out_writer.release()
+                cap.release()
+                out_writer.release()
             
     except Exception as e:
         output = {

@@ -73,3 +73,5 @@
 - Fixed a Down-The-Line (DTL) handedness detection bug in `src/coaching_engine.py` where the $x$-coordinate check was inverted, causing right-handed golfers to be classified as left-handed (which incorrectly evaluated their trail arm as the lead arm and triggered false bent lead arm warnings).
 - Added a Firebase/GCS Cloud Storage test asset downloader task to the backlog to research ffmpeg video compression, gather test video sets (golf/non-golf), and cache custom models dynamically.
 - Updated the next-session action plan to track integration test suite development (Option A & B) and Cloud Storage downloader setup.
+- Created `src/visual_stitcher.py` containing the synchronized dashboard video compilation logic (warping, padding, milestone tracker, and metrics scoreboard).
+- Integrated the visual stitcher into `analyze_swing.py` with dynamic landmark extraction on matched pro swings (instantiating a fresh `GolfVideoProcessor` instance to reset MediaPipe's monotonic timestamps).
