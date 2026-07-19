@@ -8,11 +8,11 @@ from src.visualizer import draw_skeleton
 MILESTONE_NAMES = [
     "Address",
     "Toe-Up",
+    "Mid-Backswing",
     "Top of Backswing",
-    "Downswing",
+    "Mid-Downswing",
     "Impact",
-    "Release",
-    "Follow-Through",
+    "Mid-Follow-Through",
     "Finish"
 ]
 

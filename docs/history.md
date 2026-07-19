@@ -77,3 +77,7 @@
 - Integrated the visual stitcher into `analyze_swing.py` with dynamic landmark extraction on matched pro swings (instantiating a fresh `GolfVideoProcessor` instance to reset MediaPipe's monotonic timestamps).
 - Implemented a new follow-through spine angle retention rule (forward spine tilt >= 20 degrees for Down-The-Line view) in `src/coaching_engine.py` to detect early extension/posture loss.
 - Refined the synchronized dashboard in `src/visual_stitcher.py` to dynamically highlight active metrics at their corresponding milestones during video playback, and increased the contrast of inactive metric rows to light gray.
+- Created `src/detector.py` to decouple the binary gatekeeper classifier, duration validation checks (60s limit), and 2.0-second rolling window validation score aggregation.
+- Aligned `MILESTONE_NAMES` across `analyze_swing.py`, `src/visual_stitcher.py`, and `scratch/verify_pipeline.py` with GolfDB's true training classes (Address, Toe-Up, Mid-Backswing, Top of Backswing, Mid-Downswing, Impact, Mid-Follow-Through, Finish).
+- Updated physical heuristics and coaching engine angle calculators to use the corrected milestone keys, achieving an overall pipeline MAE of 3.26 frames on the GolfDB regression suite.
+- Logged the view-dependent DTL handedness check task to `docs/backlog.md`.

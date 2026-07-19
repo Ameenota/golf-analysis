@@ -29,6 +29,20 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Created [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) and integrated it into `analyze_swing.py` to compile a side-by-side synchronized dashboard video (Alternative B layout) containing the user, the matched pro, a dynamic milestone tracker log, and metrics scoreboard.
 - Implemented a follow-through spine angle posture check (DTL only, minimum 20 degrees) in `src/coaching_engine.py` to detect early extension, and added it to the visual scorecard.
 - Improved layout contrast in `src/visual_stitcher.py` by boosting the color of inactive metric rows and status badges to a highly legible light gray (170, 170, 170).
+- Decoupled detection from analysis by refactoring the binary validation logic into a new module [detector.py](file:///Users/sagar/Documents/ML/golf-analysis/src/detector.py).
+- Implemented a 2.0-second rolling window validation score aggregation, resolving the dilution issue on long videos.
+- Configured a video duration validation check (defaulting to a maximum of 60.0 seconds) that runs immediately at the beginning of the pipeline using OpenCV metadata to reject long files before extracting landmarks.
+- Updated the default gatekeeper validation threshold in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) to `0.60` based on a mathematical Precision-Recall sweep after fixing the `min_periods=1` early-frame bug (yielding 97.0% accuracy, 99.3% precision, 94.3% recall, and successfully validating `IMG_0018.MOV` which scored `0.829`).
+- Created and executed a large-scale evaluation test [evaluate_gatekeeper_rolling.py](file:///Users/sagar/Documents/ML/golf-analysis/scratch/evaluate_gatekeeper_rolling.py) to verify rolling window accuracy on the official 305-video train/test split.
+- Ran regression testing [verify_pipeline.py](file:///Users/sagar/Documents/ML/golf-analysis/scratch/verify_pipeline.py) achieving an overall MAE of 5.08 frames (below the 6.0 limit) with 100% video validation success.
+- Validated and batch-processed all 7 manual holdout videos in `data/r-videos/` (including the newly added `kin-1.mp4`), achieving a **100% pass rate** and successfully compiling comparison overlay videos and biomechanical markdown reports for each.
+- Resolved a critical milestone naming mismatch between model classes and application display labels:
+  - Corrected `MILESTONE_NAMES` to: Address (Class 1), Toe-Up (Class 2), Mid-Backswing (Class 3), Top of Backswing (Class 4), Mid-Downswing (Class 5), Impact (Class 6), Mid-Follow-Through (Class 7), Finish (Class 8).
+  - Fixed physical heuristics in `analyze_swing.py` to search correct chronological windows (Address to Top for Top; Top to Impact for Impact).
+  - Updated `src/coaching_engine.py` to query correct aligned keys (Class 4 for Top metrics, Class 6 for Impact metrics, Class 7 for Follow-Through metrics).
+  - Confirmed the fix by running `scratch/verify_pipeline.py` which evaluated with an overall MAE of **3.26 frames**, and regenerated all 7 holdout reports/videos.
+  - Logged the DTL handedness detection view-inversion bug to `docs/backlog.md`.
+
 
 ---
 

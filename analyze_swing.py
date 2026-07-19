@@ -4,7 +4,6 @@ import json
 import numpy as np
 import cv2
 import pandas as pd
-import xgboost as xgb
 import tensorflow as tf
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -16,15 +15,16 @@ from src.alignment import compute_monotonic_alignment
 from src.visualizer import draw_skeleton
 from src.coaching_engine import analyze_swing_biomechanics
 from src.visual_stitcher import create_synchronized_dashboard
+from src.detector import GolfSwingDetector
 
 MILESTONE_NAMES = [
     "Address",
     "Toe-Up",
+    "Mid-Backswing",
     "Top of Backswing",
-    "Downswing",
+    "Mid-Downswing",
     "Impact",
-    "Release",
-    "Follow-Through",
+    "Mid-Follow-Through",
     "Finish"
 ]
 
@@ -278,8 +278,8 @@ def main():
     save_json_path = ""
     parser = argparse.ArgumentParser(description="End-to-End Golf Swing Analyzer Inference CLI")
     parser.add_argument("video_path", type=str, help="Path to raw golf swing video file")
-    parser.add_argument("--gatekeeper-threshold", type=float, default=0.7346,
-                        help="Confidence threshold for golf swing validation (default: 0.7346)")
+    parser.add_argument("--gatekeeper-threshold", type=float, default=0.60,
+                        help="Confidence threshold for golf swing validation (default: 0.60)")
     parser.add_argument("--plot", type=str, default="", help="Path to save diagnostic probabilities plot (.png)")
     parser.add_argument("--save-video", type=str, nargs="?", const="AUTO", default="",
                         help="Path to save annotated skeleton overlay video (.mp4). If passed without value, saves next to input with suffix '_processed'")
@@ -289,6 +289,8 @@ def main():
                         help="Camera view perspective (default: down-the-line)")
     parser.add_argument("--handedness", type=str, choices=["auto", "right", "left"], default="auto",
                         help="Golfer handedness (default: auto)")
+    parser.add_argument("--max-duration", type=float, default=60.0,
+                        help="Maximum allowed video duration in seconds to avoid processing extremely long files (default: 60.0)")
     parser.add_argument("--speed", type=float, default=0.5,
                         help="Speed factor for the output video playback (default: 0.5)")
     
@@ -314,6 +316,31 @@ def main():
         write_and_print_output(output, save_json_path)
         return
         
+    # 1b. Check video duration before processing (early exit)
+    try:
+        detector = GolfSwingDetector()
+        is_duration_valid, duration = detector.check_duration(args.video_path, max_duration=args.max_duration)
+        if not is_duration_valid:
+            output = {
+                "success": False,
+                "validated": False,
+                "gatekeeper_score": 0.0,
+                "error": f"Video duration ({duration:.2f} seconds) exceeds the maximum allowed limit of {args.max_duration:.2f} seconds.",
+                "milestones": None
+            }
+            write_and_print_output(output, save_json_path)
+            return
+    except Exception as e:
+        output = {
+            "success": False,
+            "validated": False,
+            "gatekeeper_score": 0.0,
+            "error": f"Failed during duration validation check: {str(e)}",
+            "milestones": None
+        }
+        write_and_print_output(output, save_json_path)
+        return
+
     try:
         # 2. Run MediaPipe Landmark Extraction & Smoothing
         processor = GolfVideoProcessor()
@@ -324,29 +351,14 @@ def main():
         fps = float(df["fps"].iloc[0])
         N = len(df)
         
-        # 3. Sliding Window Feature Engineering for Gatekeeper
-        df_features = engineer_sliding_window(df, joints=HIGH_MOVEMENT_JOINTS)
-        feature_cols = sorted([c for c in df_features.columns if c.startswith("norm_")])
-        
-        if len(feature_cols) != 98:
-            raise ValueError(f"Feature extraction yielded {len(feature_cols)} normalized features. Expected exactly 98.")
-            
-        # 4. XGBoost Binary Gatekeeper Validation
-        gate_model = xgb.XGBClassifier()
-        model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
-        gate_model_path = os.path.join(model_dir, "golf_binary_detector.json")
-        
-        if not os.path.exists(gate_model_path):
-            raise FileNotFoundError(f"XGBoost gatekeeper model not found at {gate_model_path}")
-            
-        gate_model.load_model(gate_model_path)
-        
-        X_gate = df_features[feature_cols].values
-        probs_gate = gate_model.predict_proba(X_gate)[:, 1]
-        avg_gate_prob = float(np.mean(probs_gate))
+        # 3. XGBoost Binary Gatekeeper Validation
+        # (Feature engineering and prediction is encapsulated inside detector)
+        is_valid, avg_gate_prob, probs_gate, df_features = detector.validate(
+            df, fps, threshold=args.gatekeeper_threshold, use_rolling=True
+        )
         
         # Check validation threshold
-        if avg_gate_prob < args.gatekeeper_threshold:
+        if not is_valid:
             output = {
                 "success": False,
                 "validated": False,
@@ -358,12 +370,14 @@ def main():
             return
             
         # 5. Keras LSTM Milestone Inference
+        model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
         lstm_model_path = os.path.join(model_dir, "lstm_phase_model.keras")
         if not os.path.exists(lstm_model_path):
             raise FileNotFoundError(f"Keras LSTM model not found at {lstm_model_path}")
             
         lstm_model = tf.keras.models.load_model(lstm_model_path, compile=False)
         
+        feature_cols = sorted([c for c in df_features.columns if c.startswith("norm_")])
         base_features = sorted([c for c in feature_cols if not (c.endswith("t-5") or c.endswith("t+5"))])
         if len(base_features) != 66:
             raise ValueError(f"Base landmark feature extraction yielded {len(base_features)} features. Expected exactly 66.")
@@ -409,13 +423,13 @@ def main():
             
         # 6b. Apply Physical Heuristic Adjustments
         try:
-            # 1. Adjust Impact to lowest hand height between Downswing & Release
-            downswing_frame = milestones_output["Downswing"]["frame"]
-            release_frame = milestones_output["Release"]["frame"]
+            # 1. Adjust Impact to lowest hand height between Top of Backswing & Impact
+            top_frame = milestones_output["Top of Backswing"]["frame"]
+            impact_frame = milestones_output["Impact"]["frame"]
             
-            if release_frame - downswing_frame > 1:
-                start_search = downswing_frame + 1
-                end_search = release_frame - 1
+            if impact_frame - top_frame > 1:
+                start_search = top_frame + 1
+                end_search = impact_frame - 1
                 
                 downswing_segment = df.iloc[start_search:end_search+1]
                 wrist_y = (downswing_segment["smooth_left_wrist_y"] + downswing_segment["smooth_right_wrist_y"]) / 2.0
@@ -428,13 +442,13 @@ def main():
                     milestones_output["Impact"]["heuristic_corrected"] = True
                     milestones_output["Impact"]["shift_distance"] = lowest_hand_frame - milestones_output["Impact"]["raw_peak_frame"]
             
-            # 2. Adjust Top of Backswing to highest hand height between Address & Downswing
+            # 2. Adjust Top of Backswing to highest hand height between Address & Top of Backswing
             address_frame = milestones_output["Address"]["frame"]
-            downswing_frame = milestones_output["Downswing"]["frame"]
+            top_frame = milestones_output["Top of Backswing"]["frame"]
             
-            if downswing_frame - address_frame > 1:
+            if top_frame - address_frame > 1:
                 start_search = address_frame + 1
-                end_search = downswing_frame - 1
+                end_search = top_frame - 1
                 
                 backswing_segment = df.iloc[start_search:end_search+1]
                 wrist_y = (backswing_segment["smooth_left_wrist_y"] + backswing_segment["smooth_right_wrist_y"]) / 2.0

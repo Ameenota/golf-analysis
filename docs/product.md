@@ -13,12 +13,12 @@ This document describes the user-facing product features, biomechanical rules, a
 ### B. Milestone Detection
 * **User Experience**: The system automatically scans the video and identifies the exact frame indices of the **8 Critical Milestones** of the golf swing:
   1. **Address (F1)**: Start of the swing setup.
-  2. **Toe-Up (F2)**: Shaft is parallel to the ground during take-away.
-  3. **Top of Backswing (F3)**: Club changes direction at the peak.
-  4. **Downswing (F4)**: Shaft is parallel to the ground during downswing.
-  5. **Impact (F5)**: The exact frame the club strikes the ball.
-  6. **Release (F6)**: Shaft is parallel to the ground post-impact.
-  7. **Follow-Through (F7)**: Club is vertical post-impact.
+  2. **Toe-Up (F2)**: Shaft is parallel to the ground during takeaway.
+  3. **Mid-Backswing (F3)**: Left arm is parallel to the ground during backswing.
+  4. **Top of Backswing (F4)**: Club changes direction at the peak.
+  5. **Mid-Downswing (F5)**: Left arm is parallel to the ground during downswing.
+  6. **Impact (F6)**: The exact frame the club strikes the ball.
+  7. **Mid-Follow-Through (F7)**: Shaft is parallel to the ground post-impact.
   8. **Finish (F8)**: Completion of the swing.
 
 ### C. Pro Matchmaker
@@ -59,9 +59,9 @@ This document describes the user-facing product features, biomechanical rules, a
 | :---: | :--- | :--- | :--- |
 | **1** | Address | Setup alignment and baseline torso scale. | Hands low, body stationary. |
 | **2** | Toe-Up | Takeaway path validation. | Club shaft parallel to ground. |
-| **3** | Top of Backswing | Determines maximum backswing coil. | Max shoulder rotation, hips loaded. |
-| **4** | Downswing | Transition/lag angle assessment. | Club shaft parallel to ground. |
-| **5** | Impact | Crucial moment of truth. | Direct contact with ball. |
-| **6** | Release | Release of wrist lag. | Club shaft parallel to ground. |
-| **7** | Follow-Through | Post-impact extension check. | Arms fully extended towards target. |
+| **3** | Mid-Backswing | Backswing path/arm plane validation. | Left arm parallel to ground. |
+| **4** | Top of Backswing | Determines maximum backswing coil. | Max shoulder rotation, hips loaded. |
+| **5** | Mid-Downswing | Downswing path/lag assessment. | Left arm parallel to ground. |
+| **6** | Impact | Crucial moment of truth. | Direct contact with ball. |
+| **7** | Mid-Follow-Through | Post-impact extension check. | Club shaft parallel to ground. |
 | **8** | Finish | Balance and weight transfer check. | Torso facing target, weight on lead foot. |

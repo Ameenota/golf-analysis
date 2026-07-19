@@ -293,7 +293,7 @@ def analyze_swing_biomechanics(df, milestones, view, handedness="auto", custom_t
         issues.append(issue_info)
         
     # Rule B2: Spine Tilt at Follow-Through (F7)
-    f7_idx = milestones.get("Follow-Through", {}).get("frame")
+    f7_idx = milestones.get("Mid-Follow-Through", {}).get("frame")
     if f7_idx is not None and f7_idx < len(df):
         row_follow = df.iloc[f7_idx]
         spine_tilt_follow = row_follow["torso_angle_deg"]

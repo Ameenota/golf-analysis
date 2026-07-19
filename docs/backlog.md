@@ -44,6 +44,10 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 - [ ] **Auto View Detection (DTL vs. FO)**
   - **Idea**: Dynamically detect if an incoming video is Down-The-Line or Face-On.
   - **Approach**: Implement the hybrid 2D/3D heuristic (`norm_sh_width > 0.45` -> FO, `< 0.20` -> DTL, fallback to `sh_z_diff <= 0.21` -> FO) which achieved **98.1% accuracy** on the GolfDB dataset. Add a `--view auto` CLI option in `analyze_swing.py`.
+- [ ] **Down-The-Line Handedness Detection Correction**
+  - **Issue**: Standard DTL video coordinate space is inverted compared to Face-On (FO). A right-handed golfer facing left in DTL moves their hands to the right (larger X) at the top of the backswing (`wrists_x >= torso_x`), which the algorithm misclassifies as Left-Handed, leading to inverted limb calculations and false bent lead arm warnings (e.g. `IMG_6826.MOV`).
+  - **Fix**: Update `detect_handedness()` in `src/coaching_engine.py` to check the detected `view` and invert the $x$-coordinate comparison condition when the view is `down-the-line`.
+
 
 ### ☁️ Cloud Infrastructure & Integration Testing
 - [ ] **On-Demand Test Asset & Model Downloader**
@@ -99,5 +103,6 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 - [x] **Biomechanical Coaching Rules Engine & Pro Matchmaker**
   - **Accomplishment**: Built a view-dependent biomechanical evaluation engine and integrated it into the inference pipeline. Added auto-handedness detection, a pro matchmaker against precalculated profiles, and automated Markdown coaching reports with comparison tables and drills.
 - [x] **Clipped Slow-Motion Swing Annotator & Video Scorecard**
-  - **Accomplishment**: Enhanced `analyze_swing.py` to clip output videos precisely between milestone boundaries (Address - 5 to Finish + 5), support adjustable slow-motion playback speed, draw a biomechanics scorecard panel in the top-right, and display a session metadata debug bar at the bottom.
+- [x] **Decoupled Rolling Window Gatekeeper & Video Duration Validation**
+  - **Accomplishment**: Decoupled the XGBoost binary validator from [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) into the modular class `GolfSwingDetector` in [detector.py](file:///Users/sagar/Documents/ML/golf-analysis/src/detector.py). Implemented 2.0-second rolling window validation (eliminating long-video dilution bug) and configured a 1-minute early duration gatekeeper check. Verified with a new 305-video comparative evaluation script achieving 97.4% overall accuracy and 98.4% recall.
 
