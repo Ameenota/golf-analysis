@@ -402,8 +402,54 @@ def main():
                 "timestamp": round(float(pred_frame) / fps, 4),
                 "raw_peak_frame": raw_peak_frame,
                 "dp_corrected": bool(dp_corrected),
-                "shift_distance": int(shift_dist)
+                "shift_distance": int(shift_dist),
+                "heuristic_corrected": False
             }
+            
+        # 6b. Apply Physical Heuristic Adjustments
+        try:
+            # 1. Adjust Impact to lowest hand height between Downswing & Release
+            downswing_frame = milestones_output["Downswing"]["frame"]
+            release_frame = milestones_output["Release"]["frame"]
+            
+            if release_frame - downswing_frame > 1:
+                start_search = downswing_frame + 1
+                end_search = release_frame - 1
+                
+                downswing_segment = df.iloc[start_search:end_search+1]
+                wrist_y = (downswing_segment["smooth_left_wrist_y"] + downswing_segment["smooth_right_wrist_y"]) / 2.0
+                lowest_hand_frame = int(wrist_y.idxmax())
+                
+                old_impact = milestones_output["Impact"]["frame"]
+                if old_impact != lowest_hand_frame:
+                    milestones_output["Impact"]["frame"] = lowest_hand_frame
+                    milestones_output["Impact"]["timestamp"] = round(float(lowest_hand_frame) / fps, 4)
+                    milestones_output["Impact"]["heuristic_corrected"] = True
+                    milestones_output["Impact"]["shift_distance"] = lowest_hand_frame - milestones_output["Impact"]["raw_peak_frame"]
+            
+            # 2. Adjust Top of Backswing to highest hand height between Address & Downswing
+            address_frame = milestones_output["Address"]["frame"]
+            downswing_frame = milestones_output["Downswing"]["frame"]
+            
+            if downswing_frame - address_frame > 1:
+                start_search = address_frame + 1
+                end_search = downswing_frame - 1
+                
+                backswing_segment = df.iloc[start_search:end_search+1]
+                wrist_y = (backswing_segment["smooth_left_wrist_y"] + backswing_segment["smooth_right_wrist_y"]) / 2.0
+                highest_hand_frame = int(wrist_y.idxmin())
+                
+                old_top = milestones_output["Top of Backswing"]["frame"]
+                if old_top != highest_hand_frame:
+                    milestones_output["Top of Backswing"]["frame"] = highest_hand_frame
+                    milestones_output["Top of Backswing"]["timestamp"] = round(float(highest_hand_frame) / fps, 4)
+                    milestones_output["Top of Backswing"]["heuristic_corrected"] = True
+                    milestones_output["Top of Backswing"]["shift_distance"] = highest_hand_frame - milestones_output["Top of Backswing"]["raw_peak_frame"]
+                    
+            # Sync back milestone_frames list for correct plotting
+            milestone_frames = [milestones_output[m_name]["frame"] for m_name in MILESTONE_NAMES]
+        except Exception as he:
+            pass
             
         # 7. Run Biomechanical Analysis and Pro Matchmaker
         bio_results = analyze_swing_biomechanics(

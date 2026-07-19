@@ -68,3 +68,5 @@
 - Modified `analyze_swing.py` to support automatic crop clipping around swing milestone boundaries (Address - 5 to Finish + 5).
 - Integrated adjustable slow-motion playback speed parameter (`--speed`) and added support for automatic processed output naming (`_processed.mp4`).
 - Implemented a top-right biomechanics scorecard panel showing metrics, measurements, frames, limits, and colored PASS/WARN tags, along with a bottom debug bar displaying session metadata.
+- Implemented post-processing wrist-height heuristic adjustments for `Top of Backswing` (highest hand Y-position) and `Impact` (lowest hand Y-position) to correct sequence locator errors due to tracking lag and tempo.
+- Bounded heuristic searches to chronological segments (`[Address + 1, Downswing - 1]` and `[Downswing + 1, Release - 1]`) to guarantee mathematical milestone order consistency.
