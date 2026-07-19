@@ -203,8 +203,8 @@ def main():
     parser.add_argument("--save-video", type=str, default="", help="Path to save annotated skeleton overlay video (.mp4)")
     parser.add_argument("--save-json", type=str, default="", help="Path to save output JSON results")
     parser.add_argument("--save-report", type=str, default="", help="Path to save Markdown coaching report (.md)")
-    parser.add_argument("--view", type=str, choices=["face-on", "down-the-line"], default="face-on",
-                        help="Camera view perspective (default: face-on)")
+    parser.add_argument("--view", type=str, choices=["face-on", "down-the-line"], default="down-the-line",
+                        help="Camera view perspective (default: down-the-line)")
     parser.add_argument("--handedness", type=str, choices=["auto", "right", "left"], default="auto",
                         help="Golfer handedness (default: auto)")
     

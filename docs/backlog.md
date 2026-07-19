@@ -41,6 +41,9 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
     - Chronological consistency ($T_1 < T_2 < \dots < T_8$).
     - Relative frame range boundary checks.
     - Physical downswing duration validation (must be between 6 and 12 frames at 30 FPS).
+- [ ] **Auto View Detection (DTL vs. FO)**
+  - **Idea**: Dynamically detect if an incoming video is Down-The-Line or Face-On.
+  - **Approach**: Implement the hybrid 2D/3D heuristic (`norm_sh_width > 0.45` -> FO, `< 0.20` -> DTL, fallback to `sh_z_diff <= 0.21` -> FO) which achieved **98.1% accuracy** on the GolfDB dataset. Add a `--view auto` CLI option in `analyze_swing.py`.
 
 
 ---

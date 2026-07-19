@@ -62,4 +62,6 @@
 - Added `scratch/verify_coaching.py` to automate end-to-end integration verification, successfully validating Face-On and Down-The-Line pipeline execution.
 - Expanded coaching reports to include exact measured frames, explanations of why each metric matters, what the golfer loses, and side-by-side comparison tables against matched pro golfers' actual reference values.
 - Updated `PRO_DATABASE` in `src/coaching_engine.py` to store precalculated biomechanical reference metrics for all 5 professional golfers.
-
+- Analyzed coordinate geometric features on the preprocessed GolfDB dataset (1,399 videos) to distinguish Down-The-Line (DTL) vs. Face-On (FO) camera views, establishing a hybrid 2D/3D heuristic with 98.1% accuracy.
+- Changed the default camera view parameter in `analyze_swing.py` to `down-the-line`.
+- Appended the auto view-detection enhancement task to the prioritized project backlog (`docs/backlog.md`).
