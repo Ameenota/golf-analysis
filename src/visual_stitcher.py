@@ -120,6 +120,17 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
         "spine_tilt_at_follow": "Follow-Through"
     }
     
+    # Dynamic chronological sorting by milestone order
+    def get_milestone_order(item):
+        key = item[0]
+        m_name = METRIC_MILESTONES.get(key)
+        try:
+            return MILESTONE_NAMES.index(m_name)
+        except ValueError:
+            return 999  # Place at bottom if milestone not in standard list
+            
+    metrics_to_show.sort(key=get_milestone_order)
+    
     # Left column user metrics
     for idx, (key, label, limit, issue_name) in enumerate(metrics_to_show):
         val = user_metrics.get(key)
