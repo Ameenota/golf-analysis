@@ -27,6 +27,8 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Changed the default camera view parameter in `analyze_swing.py` to `down-the-line` and logged the auto-detection task to the prioritized project backlog (`docs/backlog.md`).
 - Enhanced the inference video renderer with automatic crop clipping around swing boundaries (Address - 5 to Finish + 5), adjustable slow-motion playback (`--speed`), a top-right biomechanical scorecard metrics panel, and a bottom debug info bar showing view, handedness, pro matchup ratios, file info, and frames.
 - Created [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) and integrated it into `analyze_swing.py` to compile a side-by-side synchronized dashboard video (Alternative B layout) containing the user, the matched pro, a dynamic milestone tracker log, and metrics scoreboard.
+- Implemented a follow-through spine angle posture check (DTL only, minimum 20 degrees) in `src/coaching_engine.py` to detect early extension, and added it to the visual scorecard.
+- Improved layout contrast in `src/visual_stitcher.py` by boosting the color of inactive metric rows and status badges to a highly legible light gray (170, 170, 170).
 
 ---
 
