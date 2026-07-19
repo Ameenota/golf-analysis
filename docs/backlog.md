@@ -21,6 +21,9 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 - [x] **End-to-End Pipeline Verification**
   - **Idea**: Test the complete integrated pipeline on unseen and sample videos to ensure correct rejection of non-golf and accurate milestone extraction.
   - **Goal**: Verified on valid/invalid videos and created `scratch/verify_pipeline.py` which passes with a 2.95 frames overall MAE.
+- [x] **Bidirectional LSTM Masking Layer & Dynamic Padding Invariance**
+  - **Idea**: Add `layers.Masking(mask_value=0.0)` and dynamic input shape `(None, 66)` to prevent backward LSTM state corruption over zero-padded frames.
+  - **Goal**: Retrained model, verified 100% mathematical padding invariance (0.00000000 max probability diff across sequence lengths), and improved pipeline MAE from 3.26 to 2.71 frames.
 
 ---
 

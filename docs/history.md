@@ -83,3 +83,4 @@
 - Added `layers.Masking(mask_value=0.0)` and dynamic input shape `(None, 66)` to the Bidirectional LSTM model architecture in `notebooks/lstm_keras.ipynb` and retrained `models/lstm_phase_model.keras` to eliminate backward LSTM state corruption from zero-padding.
 - Updated `analyze_swing.py` to pass single-video feature arrays `(1, N, 66)` directly into the LSTM without zero-padding to 1,280 frames.
 - Verified 100% mathematical padding invariance (0.00000000 max probability difference between unpadded vs 400 vs 1,280 frames) and improved overall batch evaluation MAE from 3.26 frames down to **2.71 frames**.
+- Marked the Bidirectional LSTM Masking & Padding Invariance task as completed in `docs/backlog.md`.
