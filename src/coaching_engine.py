@@ -153,19 +153,12 @@ def detect_handedness(df, milestones, view, user_override=None):
     right_wrist_x = row["smooth_right_wrist_x"]
     wrists_x = (left_wrist_x + right_wrist_x) / 2.0
     
-    # View-dependent check
-    if view == "face-on":
-        # FO: right-handed coils back to viewer's left (smaller x)
-        if wrists_x < torso_x:
-            return "right"
-        else:
-            return "left"
+    # In both Face-On and Down-the-Line views, a right-handed golfer
+    # coils back towards the viewer's left (smaller x coordinate in image space).
+    if wrists_x < torso_x:
+        return "right"
     else:
-        # DTL: right-handed coils back to viewer's right (larger x)
-        if wrists_x > torso_x:
-            return "right"
-        else:
-            return "left"
+        return "left"
 
 def match_pro_golfer(user_ratio, gender, view):
     """Matches the user to the closest pro golfer based on ratio, filtering by view and gender."""
