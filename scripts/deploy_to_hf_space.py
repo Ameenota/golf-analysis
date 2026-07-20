@@ -36,7 +36,6 @@ def deploy_space(space_repo_id: str):
     
     # Files to upload at root of space
     root_files = [
-        "index.html",
         "README.md",
         "requirements.txt",
         "packages.txt",
