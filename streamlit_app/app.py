@@ -196,8 +196,7 @@ def main():
         with tab_video:
             st.markdown(f"#### 🎥 Synchronized Pro Comparison (`{analysis_data['source']}`)")
             if os.path.exists(analysis_data["video_path"]):
-                with open(analysis_data["video_path"], "rb") as vf:
-                    st.video(vf.read(), format="video/mp4")
+                st.video(open(analysis_data["video_path"], "rb"), format="video/mp4")
             else:
                 st.warning("Side-by-side video clip unavailable.")
 
