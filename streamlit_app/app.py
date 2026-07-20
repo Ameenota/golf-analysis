@@ -74,16 +74,16 @@ def load_preset_data(preset_key: str):
     }
 
 def run_simulated_processing():
-    """Runs a simulated step-by-step UX progress animation (~2.5s) for preset quick selection."""
+    """Runs a simulated step-by-step UX progress animation (~4.6s) for preset quick selection."""
     with st.status("Analyzing Golf Swing Video...", expanded=True) as status:
         st.write("🔍 Stage 0 & 1: Verifying video resolution and duration...")
-        time.sleep(0.6)
+        time.sleep(1.2)
         st.write("🤖 Stage 2: Running XGBoost Binary Gatekeeper Validation...")
-        time.sleep(0.7)
+        time.sleep(1.2)
         st.write("🧠 Stage 3: Predicting 8 Swing Milestones via BiLSTM...")
-        time.sleep(0.7)
+        time.sleep(1.2)
         st.write("📐 Stage 4: Calculating Biomechanical Scorecard & Pro Matchup...")
-        time.sleep(0.5)
+        time.sleep(1.0)
         status.update(label="Analysis Complete!", state="complete", expanded=False)
 
 def main():
@@ -92,12 +92,12 @@ def main():
 
     # Sidebar: Preset Selectors & Settings
     st.sidebar.markdown("## 🎯 Preset Demo Swings")
-    st.sidebar.caption("Click a preset to view pre-computed analysis instantly:")
+    st.sidebar.caption("Click a preset to view pre-computed analysis:")
 
     col_p1, col_p2, col_p3 = st.sidebar.columns(3)
-    p1_clicked = col_p1.button("Preset 1\n(IMG_0018)")
-    p2_clicked = col_p2.button("Preset 2\n(IMG_6826)")
-    p3_clicked = col_p3.button("Preset 3\n(kin-1)")
+    p1_clicked = col_p1.button("Preset A\n(IMG_0018)")
+    p2_clicked = col_p2.button("Preset B\n(IMG_6826)")
+    p3_clicked = col_p3.button("Preset C\n(kin-1)")
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("## ⚙️ Settings")
@@ -190,41 +190,43 @@ def main():
             "📈 Kinematic Charts"
         ])
 
-        # Tab 1: Video & Scorecard Badges
+        # Tab 1: Video & Scorecard Badges Below
         with tab_video:
-            col_vid, col_scorecard = st.columns([3, 2])
+            st.markdown(f"#### 🎥 Synchronized Pro Comparison (`{analysis_data['source']}`)")
+            if os.path.exists(analysis_data["video_path"]):
+                st.video(analysis_data["video_path"], format="video/mp4")
+            else:
+                st.warning("Side-by-side video clip unavailable.")
+
+            st.markdown("---")
+            st.markdown("#### 📊 Biomechanical Scorecard")
             
-            with col_vid:
-                st.markdown(f"#### Synchronized Pro Comparison (`{analysis_data['source']}`)")
-                if os.path.exists(analysis_data["video_path"]):
-                    st.video(analysis_data["video_path"])
-                else:
-                    st.warning("Side-by-side video clip unavailable.")
+            # Overview Metrics Row
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Camera View", results.get("view", "Unknown").upper())
+            c2.metric("Handedness", results.get("handedness", "Unknown").capitalize())
+            c3.metric("Matched Pro", results.get("matched_pro", "N/A"))
+            c4.metric("Gatekeeper Score", f"{results.get('gatekeeper_score', 0.0):.2f}")
 
-            with col_scorecard:
-                st.markdown("#### 📊 Biomechanical Scorecard")
-                m1, m2 = st.columns(2)
-                m1.metric("Detected View", results.get("view", "Unknown").upper())
-                m2.metric("Handedness", results.get("handedness", "Unknown").capitalize())
+            st.markdown("##### Key Biomechanical Checks")
+            metrics = results.get("biomechanical_metrics", {})
+            k1, k2, k3, k4 = st.columns(4)
 
-                p1, p2 = st.columns(2)
-                p1.metric("Matched Pro", results.get("matched_pro", "N/A"))
-                p2.metric("Gatekeeper Score", f"{results.get('gatekeeper_score', 0.0):.2f}")
+            # Spine tilt loss
+            spine_loss = metrics.get("spine_tilt_loss", 0.0)
+            k1.metric("Spine Tilt Change", f"{spine_loss:.1f}°", delta="PASS" if abs(spine_loss) <= 3.0 else "WARN Posture Shift", delta_color="inverse" if abs(spine_loss) > 3.0 else "normal")
 
-                st.markdown("##### Key Metrics Breakdown")
-                metrics = results.get("biomechanical_metrics", {})
-                
-                # Spine tilt loss
-                spine_loss = metrics.get("spine_tilt_loss", 0.0)
-                st.metric("Spine Tilt Change", f"{spine_loss:.1f}°", delta="PASS" if abs(spine_loss) <= 3.0 else "WARN Loss of Posture", delta_color="inverse" if abs(spine_loss) > 3.0 else "normal")
+            # Lead arm flex
+            arm_flex = metrics.get("lead_arm_flex_at_top", 180.0)
+            k2.metric("Lead Arm Flex at Top", f"{arm_flex:.1f}°", delta="PASS Straight Arm" if arm_flex >= 160.0 else "WARN Bent Elbow", delta_color="normal" if arm_flex >= 160.0 else "inverse")
 
-                # Lead arm flex
-                arm_flex = metrics.get("lead_arm_flex_at_top", 180.0)
-                st.metric("Lead Arm Flex at Top", f"{arm_flex:.1f}°", delta="PASS Straight Arm" if arm_flex >= 160.0 else "WARN Bent Elbow", delta_color="normal" if arm_flex >= 160.0 else "inverse")
+            # Sway ratio
+            sway = metrics.get("hip_sway_ratio", 0.0)
+            k3.metric("Hip Sway Ratio", f"{sway*100:.1f}%", delta="PASS Stable Hips" if sway <= 0.15 else "WARN Excessive Slide", delta_color="inverse" if sway > 0.15 else "normal")
 
-                # Sway ratio
-                sway = metrics.get("hip_sway_ratio", 0.0)
-                st.metric("Hip Sway Ratio", f"{sway*100:.1f}%", delta="PASS Stable Hips" if sway <= 0.15 else "WARN Excessive Slide", delta_color="inverse" if sway > 0.15 else "normal")
+            # Trail heel lift
+            heel_lift = metrics.get("trail_heel_lift_ratio", 0.0)
+            k4.metric("Trail Heel Lift", f"{heel_lift*100:.1f}%", delta="PASS Weight Transfer" if heel_lift >= 0.10 else "WARN Hanging Back", delta_color="normal" if heel_lift >= 0.10 else "inverse")
 
         # Tab 2: Coaching Report & Drills
         with tab_report:

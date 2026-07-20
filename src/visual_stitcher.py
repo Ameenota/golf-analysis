@@ -227,7 +227,10 @@ def create_synchronized_dashboard(
     # Setup Video Writer
     fps = float(df_user["fps"].iloc[0])
     out_fps = fps * speed
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    try:
+        fourcc = cv2.VideoWriter_fourcc(*"avc1")
+    except Exception:
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
     writer = cv2.VideoWriter(output_path, fourcc, out_fps, (1280, 720))

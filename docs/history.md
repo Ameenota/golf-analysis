@@ -1,5 +1,7 @@
 # Project History Log
 
+- Renamed demo presets to Preset A, Preset B, and Preset C in `streamlit_app/app.py`, increased simulated progress duration to ~4.6s, and placed the Biomechanical Scorecard below the full-width side-by-side video.
+- Re-encoded sample preset dashboard videos using OpenCV `avc1` (H.264) FourCC codec to fix blank video playback issues in web browsers.
 - Disabled `hf-xet` middleware (`HF_HUB_DISABLE_XET=1`) in `scripts/upload_assets_to_hf.py` to ensure robust standard HTTP/LFS commits to Hugging Face Model & Dataset repositories.
 - Built a segregated Streamlit web dashboard in `streamlit_app/` featuring preset demo selectors, 50MB file size validation, fast XGBoost non-golf gatekeeper rejection, and a 3-tab interactive dashboard (Tab 1: Synced Video & Scorecard, Tab 2: Coaching Report & Drills, Tab 3: Interactive Plotly Kinematic Charts).
 - Developed `scripts/upload_assets_to_hf.py` and `src/utils/hf_downloader.py` using `huggingface_hub` for automated uploading and universal local/cloud auto-downloading of ML models (`sagsan/golf-swing-analyzer-models`) and dataset assets (`sagsan/golf-swing-analyzer-dataset`).
