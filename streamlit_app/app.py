@@ -3,6 +3,7 @@ import sys
 import time
 import json
 import tempfile
+import base64
 from pathlib import Path
 import streamlit as st
 import pandas as pd
@@ -196,7 +197,21 @@ def main():
         with tab_video:
             st.markdown(f"#### 🎥 Synchronized Pro Comparison (`{analysis_data['source']}`)")
             if os.path.exists(analysis_data["video_path"]):
-                st.video(open(analysis_data["video_path"], "rb"), format="video/mp4")
+                try:
+                    with open(analysis_data["video_path"], "rb") as vf:
+                        vbytes = vf.read()
+                    b64_str = base64.b64encode(vbytes).decode("utf-8")
+                    video_html = f'''
+                    <div style="width: 100%; border-radius: 12px; overflow: hidden; background: #06090F; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
+                        <video controls autoplay loop muted style="width: 100%; display: block; max-height: 520px;">
+                            <source src="data:video/mp4;base64,{b64_str}" type="video/mp4">
+                            Your browser does not support HTML5 video playback.
+                        </video>
+                    </div>
+                    '''
+                    st.markdown(video_html, unsafe_allow_html=True)
+                except Exception as ve:
+                    st.video(open(analysis_data["video_path"], "rb"), format="video/mp4")
             else:
                 st.warning("Side-by-side video clip unavailable.")
 
@@ -260,7 +275,10 @@ def main():
                 pro_name=pro_name,
                 pro_metrics=pro_metrics
             )
-            st.plotly_chart(fig_spine, use_container_width=True)
+            try:
+                st.plotly_chart(fig_spine, width="stretch")
+            except Exception:
+                st.plotly_chart(fig_spine, use_container_width=True)
             
             fig_vel = create_wrist_velocity_chart(
                 df=pd.DataFrame(),
@@ -269,7 +287,10 @@ def main():
                 pro_name=pro_name,
                 pro_metrics=pro_metrics
             )
-            st.plotly_chart(fig_vel, use_container_width=True)
+            try:
+                st.plotly_chart(fig_vel, width="stretch")
+            except Exception:
+                st.plotly_chart(fig_vel, use_container_width=True)
 
 if __name__ == "__main__":
     main()

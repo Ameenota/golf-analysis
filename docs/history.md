@@ -113,7 +113,8 @@
 - Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
 - Created Hugging Face Space repository [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
-- Updated `st.video` call in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) to pass open file handles (`open(..., "rb")`) instead of loading raw bytes into memory, enabling HTTP range chunk streaming and fixing Base64 video truncation in Chrome and Safari on Streamlit Cloud.
+- Integrated an inline HTML5 base64 video player in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) to guarantee cross-browser video playback on Streamlit Cloud, and updated Plotly chart calls to fix `use_container_width` deprecation warnings.
+
 
 
 
