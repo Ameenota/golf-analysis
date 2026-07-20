@@ -26,6 +26,7 @@ from src.visualizer import draw_skeleton
 from src.coaching_engine import analyze_swing_biomechanics
 from src.visual_stitcher import create_synchronized_dashboard
 from src.detector import GolfSwingDetector
+from src.pro_preprocessing import load_preprocessed_pro
 
 MILESTONE_NAMES = [
     "Address",
@@ -394,8 +395,10 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
 
     avg_gate_prob = None
     try:
-        processor = GolfVideoProcessor()
-        df = processor.process_video(video_path)
+        # A VIDEO-mode MediaPipe landmarker keeps timestamp state.  Scope one
+        # processor to one video so a later pro clip can start again at t=0.
+        with GolfVideoProcessor() as processor:
+            df = processor.process_video(video_path)
         fps = float(df["fps"].iloc[0])
         
         is_valid, avg_gate_prob, probs_gate, df_features = detector.validate(
@@ -412,10 +415,17 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
         
         from src.kinematic_features import build_kinematic_features
         feat_cols, X_seq = build_kinematic_features(df, fps)
-        probs_multi = model.predict(np.expand_dims(X_seq, axis=0), verbose=0)[0]
+        # Avoid Keras ``model.predict()`` here.  ``predict()`` wraps even this
+        # single in-memory sequence in a tf.data prefetch pipeline.  In the
+        # Streamlit process on macOS, TensorFlow and PyArrow can load different
+        # Abseil builds; the prefetch condition variable then deadlocks inside
+        # IteratorGetNext.  A direct inference call has identical model
+        # semantics and does not create a tf.data iterator.
+        logits_multi = model(np.expand_dims(X_seq, axis=0), training=False)
+        probs_multi = tf.nn.softmax(logits_multi, axis=-1).numpy()[0]
         
         raw_peak_frames = [int(np.argmax(probs_multi[:, c])) for c in range(1, 9)]
-        milestone_frames = compute_monotonic_alignment(probs_multi[:, 1:9])
+        milestone_frames = compute_monotonic_alignment(probs_multi)
         
         milestones_output = {}
         for idx, name in enumerate(MILESTONE_NAMES):
@@ -466,11 +476,26 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
             pro_match = next((pv for pv in p_manifest.get("pro_videos", []) if pv["id"] == bio_results["matched_pro_video_id"]), None)
             if pro_match:
                 pro_video_path = os.path.join(PROJECT_ROOT, pro_match["path"])
-                df_pro = processor.process_video(pro_video_path)
-                feat_cols_p, X_seq_p = build_kinematic_features(df_pro, df_pro["fps"].iloc[0])
-                probs_multi_pro = model.predict(np.expand_dims(X_seq_p, axis=0), verbose=0)[0]
-                m_frames_pro = compute_monotonic_alignment(probs_multi_pro[:, 1:9])
-                m_pro_out = {name: {"frame": int(m_frames_pro[idx])} for idx, name in enumerate(MILESTONE_NAMES)}
+                try:
+                    df_pro, pro_cache = load_preprocessed_pro(pro_video_path)
+                    m_pro_out = pro_cache["milestones"]
+                except FileNotFoundError as cache_error:
+                    # Keep CLI/local analysis functional before the repeatable
+                    # cache builder has been run, while making the slow path
+                    # explicit in logs.
+                    print(f"Pro cache miss ({cache_error}); processing {pro_match['filename']} live.")
+                    with GolfVideoProcessor() as pro_processor:
+                        df_pro = pro_processor.process_video(pro_video_path)
+                    feat_cols_p, X_seq_p = build_kinematic_features(df_pro, df_pro["fps"].iloc[0])
+                    logits_multi_pro = model(
+                        np.expand_dims(X_seq_p, axis=0), training=False
+                    )
+                    probs_multi_pro = tf.nn.softmax(logits_multi_pro, axis=-1).numpy()[0]
+                    m_frames_pro = compute_monotonic_alignment(probs_multi_pro)
+                    m_pro_out = {
+                        name: {"frame": int(m_frames_pro[idx])}
+                        for idx, name in enumerate(MILESTONE_NAMES)
+                    }
                 
                 create_synchronized_dashboard(
                     user_video_path=video_path,

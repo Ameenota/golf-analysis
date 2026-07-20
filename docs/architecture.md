@@ -26,7 +26,8 @@ graph TD
     H -->|Yes| J[Bidirectional LSTM Milestone Locator]
     J --> K[Post-processing: Chronological Peak Finding]
     K --> L[Biomechanical Rules Engine]
-    L --> M[Visual Overlay & Synchronized Side-by-Side Video]
+    L --> P[Load Versioned Pro CSV + Milestone JSON]
+    P --> M[Visual Overlay & Synchronized Side-by-Side Video]
 ```
 
 ---
@@ -90,3 +91,18 @@ We use two distinct feature sets depending on the model architecture:
    Since the LSTM outputs independent frame probabilities, a post-processing algorithm (like Viterbi-style paths or dynamic programming) is required to resolve any out-of-order predictions and force $T_1 < T_2 < \dots < T_8$.
 2. **Biomechanical Rules Engine**:
    Calculates 2D angles (e.g., Lead Arm Flex, Spine Tilt) at key milestones and triggers text coaching feedback based on threshold deviations.
+
+## 6. Professional Reference Cache
+
+Professional reference videos are deterministic and are preprocessed once with
+`uv run python scripts/preprocess_pro_videos.py`. Artifacts live in
+`data/benchmark/pro_preprocessed/` and preserve the exact source filename stem:
+
+- `<original-stem>.csv` contains the processed landmark dataframe used for skeleton rendering.
+- `<original-stem>.json` contains FPS, frame count, aligned milestones, source/model/schema hashes, and the cache pipeline version.
+
+The generator reads every pro entry from `data/benchmark/manifest.json`, skips
+current artifacts, rebuilds missing or stale artifacts, supports `--force`,
+writes atomically, and reports orphan files without deleting them. Runtime
+analysis loads this cache after pro matching and falls back to live processing
+when an artifact is missing or stale.

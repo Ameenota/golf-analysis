@@ -83,14 +83,16 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Preserved `.mov`/`.mp4` upload suffixes and made generated output paths extension-independent.
   - Verified focused end-to-end inference shapes on `kin-1`: `(92, 108)` input and `(1, 92, 9)` output; all 8 kinematic unit tests pass.
 - Added repository-wide, case-insensitive `.gitignore` rules for common video formats (`mp4`, `mov`, `avi`, `mkv`, `webm`, `m4v`, `mpeg`, `mpg`, `wmv`, and `flv`) and confirmed Git currently tracks no video files.
+- Fixed the localhost custom-upload analysis hang. Keras `model.predict()` was deadlocking in a TensorFlow `tf.data` prefetch wait because the process also loaded PyArrow's bundled Abseil runtime. Inference now uses direct model forward calls, converts the model's logits with softmax, and passes the required full 9-class matrix to monotonic alignment. User and matched-pro videos now use separate scoped MediaPipe VIDEO-mode processors so timestamps can restart at zero. The 231 KB `kin-1` upload fixture completed end-to-end, including H.264 dashboard rendering, in 7.63 seconds with a `0.9868` gatekeeper score.
+- Added repeatable professional-video preprocessing with `scripts/preprocess_pro_videos.py`. All 16 manifest pro videos now have stem-preserving CSV landmark caches and JSON milestone/version metadata under `data/benchmark/pro_preprocessed/`. Runtime loads the matched-pro cache, with a safe live-processing fallback for missing/stale entries. Cached `kin-1` end-to-end analysis dropped from 7.63 seconds to 4.06 seconds (46.8% faster). The Hugging Face downloader now refreshes benchmark assets when the pro cache is incomplete.
+- Uploaded all 16 professional preprocessing caches to `sagsan/golf-swing-analyzer-dataset` so Streamlit Community Cloud cold starts can download and use the optimized path.
 
 ---
 
 ## Action Plan for Next Session
 
-1. **Custom Upload Redeployment Verification**:
-   - Redeploy the Streamlit app and upload `kin-1.mp4`; confirm analysis completes and the synchronized dashboard is playable/downloadable.
-   - Profile the silent dashboard stitching stage if cloud rendering remains unusually slow.
+1. **Custom Upload UI Verification**:
+   - After the GitHub-triggered Community Cloud redeployment completes, upload `kin-1.mp4` and confirm the synchronized dashboard is playable/downloadable in the browser.
 2. **DTL Handedness Orientation Bugfix**:
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
 3. **Golfer Centroid Tracking & Occlusion Handling**:

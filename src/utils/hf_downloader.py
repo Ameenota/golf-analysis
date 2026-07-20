@@ -41,7 +41,21 @@ def ensure_pro_dataset_downloaded(repo_id: str = None):
     benchmark_dir = PROJECT_ROOT / "data" / "benchmark"
     manifest_file = benchmark_dir / "manifest.json"
     
-    if not manifest_file.exists():
+    cache_is_complete = False
+    if manifest_file.exists():
+        try:
+            import json
+            manifest = json.loads(manifest_file.read_text())
+            cache_dir = benchmark_dir / "pro_preprocessed"
+            cache_is_complete = all(
+                (cache_dir / f"{Path(item['filename']).stem}.csv").exists()
+                and (cache_dir / f"{Path(item['filename']).stem}.json").exists()
+                for item in manifest.get("pro_videos", [])
+            )
+        except (OSError, KeyError, json.JSONDecodeError):
+            cache_is_complete = False
+
+    if not manifest_file.exists() or not cache_is_complete:
         print(f"📥 Downloading pro benchmark dataset from Hugging Face ({repo_id})...")
         try:
             snapshot_download(

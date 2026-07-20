@@ -7,6 +7,10 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 ## 🔥 High Priority (Next Actions)
 
 ### 🌐 Streamlit Community Cloud Deployment
+- [x] **Fix custom-upload analysis hanging indefinitely during BiLSTM inference**
+  - **Accomplishment**: Stack sampling identified a deadlock in Keras `model.predict()`'s `tf.data` prefetch path caused by TensorFlow/PyArrow Abseil symbol interaction. Replaced it with direct forward inference, applied softmax to the model logits, fixed the 9-class alignment input, and isolated MediaPipe timestamp state per video. Verified the 231 KB `kin-1` fixture completes through H.264 dashboard generation in 7.63 seconds.
+- [x] **Preprocess deterministic professional reference videos**
+  - **Accomplishment**: Added a manifest-driven, repeatable cache builder producing stem-preserving CSV/JSON artifacts for all 16 pro videos. Artifacts are hash/version validated, atomically written, skipped when current, and loaded at runtime with a live fallback. Cached end-to-end `kin-1` analysis completes in 4.06 seconds versus 7.63 seconds without the cache.
 - [x] **Fix valid custom uploads being reported as Gatekeeper Score 0.00**
   - **Accomplishment**: Reproduced with `kin-1.mp4` (actual gatekeeper score `0.9868`) and fixed inference-only Keras loading, restored the production 108-feature kinematic builder, preserved upload extensions/output paths, and separated pipeline errors from genuine gatekeeper rejections in the UI.
 - [x] **Deploy the public application to Streamlit Community Cloud**
