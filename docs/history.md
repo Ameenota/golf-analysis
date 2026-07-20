@@ -1,5 +1,6 @@
 # Project History Log
 
+- Fixed `TypeError` in `streamlit_app/app.py` by passing `metrics=metrics` explicitly as a keyword argument to `create_spine_angle_chart()` and `create_wrist_velocity_chart()`.
 - Redesigned Tab 3 kinematic charts in `streamlit_app/charts.py` to auto-zoom the $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered vertical milestone annotations to prevent label overlapping, and generated realistic physical biomechanical curves for spine tilt and hand acceleration release peaks.
 - Renamed demo presets to Preset A, Preset B, and Preset C in `streamlit_app/app.py`, increased simulated progress duration to ~4.6s, and placed the Biomechanical Scorecard below the full-width side-by-side video.
 - Re-encoded sample preset dashboard videos using OpenCV `avc1` (H.264) FourCC codec to fix blank video playback issues in web browsers.
