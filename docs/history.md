@@ -93,3 +93,4 @@
 - Expanded `scratch/train_kinematic_ablations.py` and `src/kinematic_features.py` to evaluate feature subset candidates F (Upper-body vels + Summaries [90 features]) and G (Wrist vels + Summaries [78 features]) across 140 held-out test videos.
 - Confirmed Experiment E (108 features) as the ultimate winning production model (**2.66 frames MAE**, **+34.52% overall MAE reduction** over baseline) beating feature subsets F (3.06 MAE) and G (5.75 MAE).
 - Updated `docs/experiments.md` with EXP-002 detailed logs and ran `scratch/verify_pipeline.py` batch test achieving **2.41 frames overall pipeline MAE** (100% video pass rate).
+- Added `pytest` dev dependency group to `pyproject.toml` and updated `uv.lock` for automated testing pipeline.
