@@ -227,13 +227,16 @@ def create_synchronized_dashboard(
     # Setup Video Writer
     fps = float(df_user["fps"].iloc[0])
     out_fps = fps * speed
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    
     try:
-        fourcc = cv2.VideoWriter_fourcc(*"avc1")
+        import imageio
+        writer = imageio.get_writer(output_path, fps=out_fps, codec="libx264", pixelformat="yuv420p")
+        use_imageio = True
     except Exception:
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    
-    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    writer = cv2.VideoWriter(output_path, fourcc, out_fps, (1280, 720))
+        writer = cv2.VideoWriter(output_path, fourcc, out_fps, (1280, 720))
+        use_imageio = False
     
     # Layout placements
     # Left Box: x=70 to 570, y=100 to 600 (500x500)
@@ -298,7 +301,13 @@ def create_synchronized_dashboard(
         draw_coaching_metrics(canvas, bio_results, f, milestones_user, y_offset=615)
         
         # Write frame
-        writer.write(canvas)
+        if use_imageio:
+            writer.append_data(canvas[:, :, ::-1])
+        else:
+            writer.write(canvas)
         
-    writer.release()
+    if use_imageio:
+        writer.close()
+    else:
+        writer.release()
     print(f"Synchronized comparison video compiled successfully to: {output_path}")
