@@ -108,7 +108,7 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
     
     metrics_to_show = [
         ("lead_arm_flex_at_top", "Lead Arm Flex at Top", ">= 160", "Bent Lead Arm at Top of Backswing"),
-        ("spine_tilt_at_address", "Spine Tilt at Address", "5-15 FO / 30-45 DTL", "Incorrect Spine Tilt at Address"),
+        ("spine_tilt_at_address", "Spine Tilt at Address", "5-15 FO / 24-42 DTL", "Incorrect Spine Tilt at Address"),
         ("lead_knee_flex_at_address", "Knee Flex at Address", "165-175 FO / 150-165 DTL", "Incorrect Knee Flex at Address"),
         ("spine_tilt_at_follow", "Spine Tilt at Follow", ">= 20", "Loss of Posture at Follow-Through"),
         ("trail_heel_lift_ratio", "Trail Heel Lift Finish", ">= 10%", "Trail Heel Stuck Flat at Finish (Hanging Back)"),

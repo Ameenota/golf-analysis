@@ -87,6 +87,8 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Added repeatable professional-video preprocessing with `scripts/preprocess_pro_videos.py`. All 16 manifest pro videos now have stem-preserving CSV landmark caches and JSON milestone/version metadata under `data/benchmark/pro_preprocessed/`. Runtime loads the matched-pro cache, with a safe live-processing fallback for missing/stale entries. Cached `kin-1` end-to-end analysis dropped from 7.63 seconds to 4.06 seconds (46.8% faster). The Hugging Face downloader now refreshes benchmark assets when the pro cache is incomplete.
 - Uploaded all 16 professional preprocessing caches to `sagsan/golf-swing-analyzer-dataset` so Streamlit Community Cloud cold starts can download and use the optimized path.
 - Added zero-padded source frame numbers to both synchronized dashboard labels (`USER SWING (FXXX)` and `PRO (REFERENCE FXXX)`).
+- Audited Address spine tilt across all 16 curated professional clips and recalibrated the Down-The-Line pass range from 30°–45° to 24°–42°. Added a backlog item for future 2° borderline tolerance bands while preserving warnings for clearly upright or horizontal posture.
+- Removed the misleading Streamlit `Slow-Motion Video Speed` slider because changing it caused a complete video regeneration rather than interactive playback-speed adjustment. Uploads now use the fixed pipeline default.
 
 ---
 
@@ -98,3 +100,5 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
 3. **Golfer Centroid Tracking & Occlusion Handling**:
    - Implement centroid lock-on to distinguish primary golfer from background bystanders.
+4. **Biomechanical Threshold Tolerance Bands**:
+   - Add pass/borderline/warning states, beginning with a 2° tolerance around the 24°–42° DTL Address spine-tilt range.

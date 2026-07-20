@@ -93,6 +93,11 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 
 ## 💤 Low Priority / Future Enhancements
 
+### 🏌️ Biomechanical Rules
+- [ ] **Add tolerance bands for biomechanical thresholds**
+  - **Idea**: Replace binary pass/warning behavior near rule boundaries with a three-level result (pass, borderline, warning) that accounts for 2D pose-estimation and frame-selection noise.
+  - **Spine Tilt Candidate**: For DTL address tilt, keep 24° to 42° as the pass range, consider a 2° borderline band on either side, and reserve warnings for values below 22° or above 44°.
+
 ### 🧹 Data Quality & Sanitization
 - [ ] **Golfer Tracking & Lock-on (Centroid Tracking)**
   - **Idea**: Implement Centroid/Proximity tracking to lock onto the primary golfer in the frame, resolving multi-person scenarios (e.g. coach/bystanders in frame) instead of using a naive multi-person rejection.

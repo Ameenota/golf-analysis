@@ -104,7 +104,6 @@ def main():
     st.sidebar.markdown("---")
     st.sidebar.markdown("## ⚙️ Settings")
     auto_view = st.sidebar.selectbox("Camera View Mode", options=["auto", "down-the-line", "face-on"], index=0)
-    slow_speed = st.sidebar.slider("Slow-Motion Video Speed", min_value=0.25, max_value=1.0, value=0.5, step=0.25)
 
     # Active Analysis State
     selected_preset = None
@@ -158,7 +157,6 @@ def main():
             res = run_analysis(
                 video_path=temp_video_path,
                 view_mode=auto_view,
-                speed=slow_speed,
                 output_video_path=out_video_path,
                 save_json_path=out_json_path,
                 save_report_path=out_report_path,

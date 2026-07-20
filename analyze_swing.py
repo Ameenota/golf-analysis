@@ -119,7 +119,7 @@ def generate_markdown_report(output, save_report_path, view):
     spine_addr = metrics.get("spine_tilt_at_address")
     if spine_addr is not None:
         status = "❌ Warning" if "Incorrect Spine Tilt at Address" in issue_names else "✅ Pass"
-        range_str = "5° to 15°" if view == "face-on" else "30° to 45°"
+        range_str = "5° to 15°" if view == "face-on" else "24° to 42°"
         pro_val = get_pro_val("spine_tilt_at_address")
         report.append(f"| Spine Tilt at Address | Address (F{f1}) | {spine_addr:.1f}° | {range_str} | {status} | {pro_val} |")
         
@@ -176,7 +176,7 @@ def generate_markdown_report(output, save_report_path, view):
             "what_lost": "If your lead elbow bends below 160°, the swing circle becomes inconsistent. This leads to hitting the turf behind the ball (fat shots), missing/topping the ball (thin shots), and a significant loss in swing speed/power."
         },
         "Incorrect Spine Tilt at Address": {
-            "why_matters": "The spine is the axle of a spinning wheel. Leaning slightly backward at setup (5° to 15° lateral for Face-On, 30° to 45° forward for Down-The-Line) sets up a stable plane of rotation.",
+            "why_matters": "The spine is the axle of a spinning wheel. Leaning slightly backward at setup (5° to 15° lateral for Face-On, 24° to 42° forward for Down-The-Line) sets up a stable plane of rotation.",
             "what_lost": "Incorrect setup angles prevent clean rotation, forcing compensation moves that ruin posture alignment and cause weak, inconsistent club delivery."
         },
         "Loss of Spine Tilt at Top of Backswing": {

@@ -100,7 +100,7 @@ COACHING_DB = {
     },
     "spine_tilt_address": {
         "issue": "Incorrect Spine Tilt at Address",
-        "threshold": "Spine Tilt: 5° to 15° lateral (FO) or 30° to 45° forward (DTL)",
+        "threshold": "Spine Tilt: 5° to 15° lateral (FO) or 24° to 42° forward (DTL)",
         "drill": "Spine Alignment Drill: Tilt your upper body slightly away from the target so your lead shoulder is higher than your trail shoulder (Face-On), or ensure you bend from your hips, keeping your back straight (Down-The-Line)."
     },
     "spine_tilt_loss": {
@@ -235,8 +235,8 @@ def analyze_swing_biomechanics(df, milestones, view, handedness="auto", custom_t
         "lead_arm_limit": 160.0,
         "spine_tilt_fo_min": 5.0,
         "spine_tilt_fo_max": 15.0,
-        "spine_tilt_dtl_min": 30.0,
-        "spine_tilt_dtl_max": 45.0,
+        "spine_tilt_dtl_min": 24.0,
+        "spine_tilt_dtl_max": 42.0,
         "spine_tilt_loss_limit": 3.0,
         "knee_flex_fo_min": 165.0,
         "knee_flex_fo_max": 175.0,
