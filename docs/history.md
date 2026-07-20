@@ -1,5 +1,6 @@
 # Project History Log
 
+- Added `**kwargs` protection to `create_spine_angle_chart()` and `create_wrist_velocity_chart()` in `streamlit_app/charts.py` to ensure complete backwards compatibility with cached Streamlit process calls.
 - Added Matched Pro trajectory overlay (Dashed Gold Line `🟡 Matched Pro (Name)`) to Plotly spine tilt and hand acceleration charts in `streamlit_app/charts.py`, including explicit interactive legend keys comparing User (Solid Green/Blue) vs. Pro (Dashed Gold).
 - Fixed `TypeError` in `streamlit_app/app.py` by passing `metrics=metrics` explicitly as a keyword argument to `create_spine_angle_chart()` and `create_wrist_velocity_chart()`.
 - Redesigned Tab 3 kinematic charts in `streamlit_app/charts.py` to auto-zoom the $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered vertical milestone annotations to prevent label overlapping, and generated realistic physical biomechanical curves for spine tilt and hand acceleration release peaks.

@@ -108,7 +108,7 @@ def generate_smooth_kinematics(milestones: dict, metrics: dict, pro_metrics: dic
     
     return df
 
-def create_spine_angle_chart(df: pd.DataFrame, milestones: dict, metrics: dict = None, pro_name: str = "Matched Pro", pro_metrics: dict = None) -> go.Figure:
+def create_spine_angle_chart(df: pd.DataFrame, milestones: dict, metrics: dict = None, pro_name: str = "Matched Pro", pro_metrics: dict = None, **kwargs) -> go.Figure:
     """Creates a zoomed Plotly line chart comparing User vs. Matched Pro spine tilt angle."""
     fig = go.Figure()
     
@@ -176,7 +176,7 @@ def create_spine_angle_chart(df: pd.DataFrame, milestones: dict, metrics: dict =
     fig.update_xaxes(range=[x_min, x_max])
     return fig
 
-def create_wrist_velocity_chart(df: pd.DataFrame, milestones: dict, metrics: dict = None, pro_name: str = "Matched Pro", pro_metrics: dict = None) -> go.Figure:
+def create_wrist_velocity_chart(df: pd.DataFrame, milestones: dict, metrics: dict = None, pro_name: str = "Matched Pro", pro_metrics: dict = None, **kwargs) -> go.Figure:
     """Creates a zoomed Plotly line chart comparing User vs. Matched Pro hand velocity."""
     fig = go.Figure()
     
