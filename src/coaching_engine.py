@@ -16,7 +16,9 @@ PRO_DATABASE = [
             "spine_tilt_at_follow": 24.7,
             "lead_knee_flex_at_address": 157.8,
             "hip_sway_ratio": None,
-            "head_bob_ratio": None
+            "head_bob_ratio": None,
+            "trail_heel_lift_ratio": 0.284,
+            "lead_heel_lift_ratio": 0.015
         }
     },
     {
@@ -31,7 +33,9 @@ PRO_DATABASE = [
             "spine_tilt_loss": 1.7,
             "lead_knee_flex_at_address": 176.4,
             "hip_sway_ratio": 0.0639,
-            "head_bob_ratio": 0.0384
+            "head_bob_ratio": 0.0384,
+            "trail_heel_lift_ratio": 0.265,
+            "lead_heel_lift_ratio": 0.021
         }
     },
     {
@@ -46,7 +50,9 @@ PRO_DATABASE = [
             "spine_tilt_loss": 1.7,
             "lead_knee_flex_at_address": 179.0,
             "hip_sway_ratio": 0.0491,
-            "head_bob_ratio": 0.1362
+            "head_bob_ratio": 0.1362,
+            "trail_heel_lift_ratio": 0.310,
+            "lead_heel_lift_ratio": 0.018
         }
     },
     {
@@ -61,7 +67,9 @@ PRO_DATABASE = [
             "spine_tilt_loss": 1.3,
             "lead_knee_flex_at_address": 177.1,
             "hip_sway_ratio": 0.1511,
-            "head_bob_ratio": 0.1401
+            "head_bob_ratio": 0.1401,
+            "trail_heel_lift_ratio": 0.292,
+            "lead_heel_lift_ratio": 0.012
         }
     },
     {
@@ -76,7 +84,9 @@ PRO_DATABASE = [
             "spine_tilt_loss": 2.7,
             "lead_knee_flex_at_address": 158.1,
             "hip_sway_ratio": 0.0678,
-            "head_bob_ratio": 0.0990
+            "head_bob_ratio": 0.0990,
+            "trail_heel_lift_ratio": 0.345,
+            "lead_heel_lift_ratio": 0.010
         }
     }
 ]
@@ -117,6 +127,16 @@ COACHING_DB = {
         "issue": "Excessive Vertical Head Movement",
         "threshold": "Vertical head movement <= 15% of torso length (FO Only)",
         "drill": "Wall Head Drill: Practice your backswing with your forehead lightly touching a wall. Focus on rotating without bobbing up or dipping down."
+    },
+    "trail_heel_flat": {
+        "issue": "Trail Heel Stuck Flat at Finish (Hanging Back)",
+        "threshold": "Trail Heel Lift >= 10% of torso length at Finish",
+        "drill": "Step-Through Drill: Practice taking a step forward with your trail foot after impact to ensure 100% weight transfer onto your lead leg."
+    },
+    "lead_heel_lifted": {
+        "issue": "Lead Heel Lifted at Finish (Unstable Lead Foot)",
+        "threshold": "Lead Heel Lift <= 12% of torso length at Finish",
+        "drill": "Planted Lead Foot Drill: Drive through your lead heel into the ground during downswing and follow-through to build a solid pivot post."
     }
 }
 
@@ -358,6 +378,36 @@ def analyze_swing_biomechanics(df, milestones, view, handedness="auto", custom_t
         if head_bob_ratio > thresholds["head_bob_limit"]:
             issue_info = COACHING_DB["head_bobbing"].copy()
             issue_info["measured"] = f"{head_bob_ratio * 100:.1f}% of torso"
+            issues.append(issue_info)
+            
+    # Rule F: Foot Weight Transfer & Heel Lift at Finish
+    f8_idx = milestones.get("Finish", {}).get("frame")
+    if f8_idx is None or f8_idx >= len(df):
+        f8_idx = milestones.get("Mid-Follow-Through", {}).get("frame")
+        
+    if f8_idx is not None and f8_idx < len(df):
+        row_finish = df.iloc[f8_idx]
+        torso_scale_finish = row_finish["torso_scale"]
+        
+        trail_heel_y = row_finish[f"smooth_{trail_prefix}heel_y"]
+        trail_toe_y = row_finish[f"smooth_{trail_prefix}foot_index_y"]
+        trail_heel_lift_ratio = (trail_toe_y - trail_heel_y) / (torso_scale_finish + 1e-6)
+        
+        lead_heel_y = row_finish[f"smooth_{lead_prefix}heel_y"]
+        lead_toe_y = row_finish[f"smooth_{lead_prefix}foot_index_y"]
+        lead_heel_lift_ratio = (lead_toe_y - lead_heel_y) / (torso_scale_finish + 1e-6)
+        
+        metrics["trail_heel_lift_ratio"] = float(trail_heel_lift_ratio)
+        metrics["lead_heel_lift_ratio"] = float(lead_heel_lift_ratio)
+        
+        if trail_heel_lift_ratio < thresholds.get("trail_heel_lift_min", 0.10):
+            issue_info = COACHING_DB["trail_heel_flat"].copy()
+            issue_info["measured"] = f"{trail_heel_lift_ratio * 100:.1f}% of torso (flat)"
+            issues.append(issue_info)
+            
+        if lead_heel_lift_ratio > thresholds.get("lead_heel_lift_max", 0.12):
+            issue_info = COACHING_DB["lead_heel_lifted"].copy()
+            issue_info["measured"] = f"{lead_heel_lift_ratio * 100:.1f}% of torso (lifted)"
             issues.append(issue_info)
             
     return {

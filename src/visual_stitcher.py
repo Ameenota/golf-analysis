@@ -110,14 +110,18 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
         ("lead_arm_flex_at_top", "Lead Arm Flex at Top", ">= 160", "Bent Lead Arm at Top of Backswing"),
         ("spine_tilt_at_address", "Spine Tilt at Address", "5-15 FO / 30-45 DTL", "Incorrect Spine Tilt at Address"),
         ("lead_knee_flex_at_address", "Knee Flex at Address", "165-175 FO / 150-165 DTL", "Incorrect Knee Flex at Address"),
-        ("spine_tilt_at_follow", "Spine Tilt at Follow-Through", ">= 20", "Loss of Posture at Follow-Through")
+        ("spine_tilt_at_follow", "Spine Tilt at Follow", ">= 20", "Loss of Posture at Follow-Through"),
+        ("trail_heel_lift_ratio", "Trail Heel Lift Finish", ">= 10%", "Trail Heel Stuck Flat at Finish (Hanging Back)"),
+        ("lead_heel_lift_ratio", "Lead Heel Lift Finish", "<= 12%", "Lead Heel Lifted at Finish (Unstable Lead Foot)")
     ]
     
     METRIC_MILESTONES = {
         "lead_arm_flex_at_top": "Top of Backswing",
         "spine_tilt_at_address": "Address",
         "lead_knee_flex_at_address": "Address",
-        "spine_tilt_at_follow": "Follow-Through"
+        "spine_tilt_at_follow": "Mid-Follow-Through",
+        "trail_heel_lift_ratio": "Finish",
+        "lead_heel_lift_ratio": "Finish"
     }
     
     # Dynamic chronological sorting by milestone order
@@ -137,6 +141,8 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
         if val is None:
             continue
             
+        val_str = f"{val * 100:.1f}%" if "ratio" in key else f"{val:.1f}°"
+            
         # Determine if the current frame is near the milestone for this metric
         m_name = METRIC_MILESTONES.get(key)
         is_active = False
@@ -144,7 +150,7 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
             m_frame = milestones_user[m_name]["frame"]
             is_active = (abs(user_frame - m_frame) <= 5)
             
-        y_pos = y_offset + (idx * 22) + 20
+        y_pos = y_offset + (idx * 20) + 16
         status_text = "WARN" if issue_name in issues else "PASS"
         
         # Color codes: bright when active, muted when inactive
@@ -154,12 +160,12 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
             bullet = "> "
             text_thickness = 2
         else:
-            text_color = (170, 170, 170) # Brighter gray (changed from 110)
+            text_color = (170, 170, 170) # Brighter gray
             status_color = (50, 50, 180) if status_text == "WARN" else (50, 180, 50) # Brighter status
             bullet = "  "
             text_thickness = 1
             
-        cv2.putText(canvas, f"{bullet}{label}: {val:.1f} (Limit: {limit})", (50, y_pos), font, font_scale, text_color, text_thickness, cv2.LINE_AA)
+        cv2.putText(canvas, f"{bullet}{label}: {val_str} (Limit: {limit})", (50, y_pos), font, font_scale, text_color, text_thickness, cv2.LINE_AA)
         cv2.putText(canvas, f" [{status_text}]", (50 + 380, y_pos), font, font_scale, status_color, text_thickness, cv2.LINE_AA)
 
     # 2. Draw Pro metrics (right side: x = 710 to 1210)
@@ -171,17 +177,19 @@ def draw_coaching_metrics(canvas, bio_results, user_frame, milestones_user, y_of
         if val is None:
             continue
             
+        val_str = f"{val * 100:.1f}%" if "ratio" in key else f"{val:.1f}°"
+            
         m_name = METRIC_MILESTONES.get(key)
         is_active = False
         if m_name in milestones_user:
             m_frame = milestones_user[m_name]["frame"]
             is_active = (abs(user_frame - m_frame) <= 5)
             
-        y_pos = y_offset + (idx * 22) + 20
-        text_color = (255, 255, 255) if is_active else (170, 170, 170) # Brighter gray (changed from 110)
+        y_pos = y_offset + (idx * 20) + 16
+        text_color = (255, 255, 255) if is_active else (170, 170, 170) # Brighter gray
         text_thickness = 2 if is_active else 1
         
-        cv2.putText(canvas, f"{pro_name} {label}: {val:.1f}", (710, y_pos), font, font_scale, text_color, text_thickness, cv2.LINE_AA)
+        cv2.putText(canvas, f"{pro_name} {label}: {val_str}", (710, y_pos), font, font_scale, text_color, text_thickness, cv2.LINE_AA)
 
 def create_synchronized_dashboard(
     user_video_path,

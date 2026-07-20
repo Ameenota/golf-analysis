@@ -149,6 +149,21 @@ def generate_markdown_report(output, save_report_path, view):
         pro_val = get_pro_val("head_bob_ratio")
         report.append(f"| Vertical Head Bobbing Ratio | Top (F{f3}) & Impact (F{f5}) | {head_bob * 100:.1f}% | <= 15% | {status} | {pro_val} |")
         
+    # 7. Trail Heel Lift (Finish)
+    f8 = milestones.get("Finish", {}).get("frame", milestones.get("Mid-Follow-Through", {}).get("frame", 0))
+    trail_heel = metrics.get("trail_heel_lift_ratio")
+    if trail_heel is not None:
+        status = "❌ Warning" if "Trail Heel Stuck Flat at Finish (Hanging Back)" in issue_names else "✅ Pass"
+        pro_val = get_pro_val("trail_heel_lift_ratio")
+        report.append(f"| Trail Heel Lift Ratio | Finish (F{f8}) | {trail_heel * 100:.1f}% | >= 10% | {status} | {pro_val} |")
+
+    # 8. Lead Heel Lift (Finish)
+    lead_heel = metrics.get("lead_heel_lift_ratio")
+    if lead_heel is not None:
+        status = "❌ Warning" if "Lead Heel Lifted at Finish (Unstable Lead Foot)" in issue_names else "✅ Pass"
+        pro_val = get_pro_val("lead_heel_lift_ratio")
+        report.append(f"| Lead Heel Lift Ratio | Finish (F{f8}) | {lead_heel * 100:.1f}% | <= 12% | {status} | {pro_val} |")
+
     report.append("\n---")
     
     # Combined Explanations & Issues section
@@ -176,6 +191,14 @@ def generate_markdown_report(output, save_report_path, view):
         "Excessive Vertical Head Movement": {
             "why_matters": "The head is the visual and mechanical anchor of the swing. Keeping it stable is like maintaining a stable center during rotation (Wall analogy).",
             "what_lost": "Dipping or bobbing shifts your entire swing hub vertically, causing erratic thin or fat turf strikes."
+        },
+        "Trail Heel Stuck Flat at Finish (Hanging Back)": {
+            "why_matters": "At the finish of a full swing, 90%+ of your body weight should shift to your lead leg, allowing your trail hip and chest to rotate fully through the ball toward the target.",
+            "what_lost": "Leaving weight on the back foot (trail heel flat) forces you to hang back, causing flip releases, severe loss of clubhead speed, and fat/thin ball contact."
+        },
+        "Lead Heel Lifted at Finish (Unstable Lead Foot)": {
+            "why_matters": "The lead foot acts as the solid anchoring post for your lower body rotation during follow-through.",
+            "what_lost": "Lifting the lead heel off the ground destabilizes your pivot point, causing loss of balance and inconsistent contact."
         }
     }
     
@@ -605,15 +628,15 @@ def main():
                 df_features_pro = engineer_sliding_window(df_pro, joints=HIGH_MOVEMENT_JOINTS)
                 
                 # LSTM sequence mapping on pro
-                x_seq_pro = df_features_pro[base_features].values.astype(np.float32)
-                N_pro = len(df_pro)
-                if N_pro < max_len:
-                    pad_len_pro = max_len - N_pro
-                    x_padded_pro = np.pad(x_seq_pro, ((0, pad_len_pro), (0, 0)), mode="constant", constant_values=0.0)
+                fps_pro = float(df_pro["fps"].iloc[0])
+                if os.path.exists(schema_path):
+                    df_kin_pro, _ = add_velocity_features(df_features_pro, fps=fps_pro, config=kin_config)
+                    x_seq_pro = df_kin_pro[feature_cols].values.astype(np.float32)
                 else:
-                    x_padded_pro = x_seq_pro[:max_len]
+                    x_seq_pro = df_features_pro[feature_cols].values.astype(np.float32)
                 
-                x_batch_pro = np.expand_dims(x_padded_pro, axis=0)
+                N_pro = len(df_pro)
+                x_batch_pro = np.expand_dims(x_seq_pro, axis=0)
                 
                 logits_pro = lstm_model(x_batch_pro, training=False)
                 probs_lstm_pro = tf.nn.softmax(logits_pro, axis=-1)
@@ -636,16 +659,16 @@ def main():
                     
                 # Apply heuristics to pro
                 try:
-                    down_p = milestones_output_pro["Downswing"]["frame"]
-                    rel_p = milestones_output_pro["Release"]["frame"]
-                    if rel_p - down_p > 1:
-                        wrist_y_p = (df_pro.iloc[down_p+1:rel_p-1]["smooth_left_wrist_y"] + df_pro.iloc[down_p+1:rel_p-1]["smooth_right_wrist_y"]) / 2.0
+                    top_p = milestones_output_pro["Top of Backswing"]["frame"]
+                    imp_p = milestones_output_pro["Impact"]["frame"]
+                    if imp_p - top_p > 1:
+                        wrist_y_p = (df_pro.iloc[top_p+1:imp_p-1]["smooth_left_wrist_y"] + df_pro.iloc[top_p+1:imp_p-1]["smooth_right_wrist_y"]) / 2.0
                         milestones_output_pro["Impact"]["frame"] = int(wrist_y_p.idxmax())
                         
                     addr_p = milestones_output_pro["Address"]["frame"]
-                    down_p = milestones_output_pro["Downswing"]["frame"]
-                    if down_p - addr_p > 1:
-                        wrist_y_p = (df_pro.iloc[addr_p+1:down_p-1]["smooth_left_wrist_y"] + df_pro.iloc[addr_p+1:down_p-1]["smooth_right_wrist_y"]) / 2.0
+                    top_p = milestones_output_pro["Top of Backswing"]["frame"]
+                    if top_p - addr_p > 1:
+                        wrist_y_p = (df_pro.iloc[addr_p+1:top_p-1]["smooth_left_wrist_y"] + df_pro.iloc[addr_p+1:top_p-1]["smooth_right_wrist_y"]) / 2.0
                         milestones_output_pro["Top of Backswing"]["frame"] = int(wrist_y_p.idxmin())
                 except Exception:
                     pass

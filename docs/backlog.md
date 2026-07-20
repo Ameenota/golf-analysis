@@ -44,6 +44,7 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
     - **Lead Arm Flex**: Checked straightness (>= 160 degrees) at Top of Backswing.
     - **Lateral Hip Sway**: Slide displacement limit check (Face-On only).
     - **Vertical Head Stability**: Bobbing/dipping vertical displacement check (Face-On only).
+    - **Foot Weight Transfer & Heel Lift**: Measured trail heel lift (hanging back check) and lead heel lift (lead foot stability check) at Finish.
 
 ### 🧹 Data Quality & Sanitization
 - [ ] **Programmatic Label Validation**
@@ -78,6 +79,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Idea**: Implement Centroid/Proximity tracking to lock onto the primary golfer in the frame, resolving multi-person scenarios (e.g. coach/bystanders in frame) instead of using a naive multi-person rejection.
 - [ ] **Occlusion Handling**
   - **Idea**: Detect frames with high NaN density (MediaPipe tracking failures due to high motion blur or rotation) and interpolate using spline interpolation instead of linear.
+- [ ] **Landmark Swap & Leg Crossing Detection (Finish Inversion Handling)**
+  - **Idea**: Detect MediaPipe left/right leg label swaps during full rotational follow-through by checking 3D Z-depth ordering and tracking trajectory sign flips ($X_{\text{left}} - X_{\text{right}}$) from Address to Finish.
 
 ### 🎨 Visual Overlay Improvements
 - [ ] **Persistent Milestone Log Overlay (Option B)**

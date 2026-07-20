@@ -1,5 +1,11 @@
 # Project History Log
 
+- Logged Landmark Swap & Leg Crossing Detection (Finish Inversion Handling) to [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md) under future low-priority tasks.
+- Implemented foot weight transfer and heel lift biomechanical rules in `src/coaching_engine.py` to evaluate trail heel lift (detecting hanging back) and lead heel lift (detecting lead foot instability) at Finish.
+- Integrated foot metrics into `analyze_swing.py` markdown coaching report generator and `src/visual_stitcher.py` side-by-side synchronized video scorecard renderer.
+- Re-processed all 7 user videos in `data/r-videos/`, successfully detecting lead heel lift warning on `kin-1.mp4` (12.5% of torso) and generating updated reports and dashboard videos.
+- Fixed pro video feature extraction in `analyze_swing.py` to dynamically extract kinematic features (Experiment E, 108 features) and corrected pro heuristic milestone references.
+
 - Added custom agent configuration and environment rules under `.agents/` including `environment.md` (requiring `uv` for python environments) and `ledger.md` (requiring `HISTORY.md` updates before commits).
 - Verified initial workspace structure and GolfDB inputs.
 - Extracted and modularized joint rendering coordinates and drawing helper to `src/visualizer.py`, cleaning up duplicate code in scripts and notebooks.

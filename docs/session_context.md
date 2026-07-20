@@ -52,6 +52,10 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Implemented 98.1% accurate hybrid 2D/3D camera view auto-detection (`detect_camera_view()`) in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) making `--view auto` the new default CLI parameter.
 - Corrected Down-The-Line (DTL) handedness detection geometry in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py), eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
 - Successfully verified end-to-end pipeline execution on DTL test swing (`IMG_6826.MOV`), correctly auto-detecting `DOWN-THE-LINE` view, `right` handedness, measuring 170.97° lead arm flex (passing), and matching with DTL pro Sandra Gal.
+- Fixed pro video feature extraction in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) to dynamically extract kinematic features (Experiment E, 108 features) and corrected pro heuristic milestone references.
+- Executed the end-to-end analysis pipeline across all 7 user videos in `data/r-videos/` (including `.MOV` and `.mp4` files), achieving a **100% gatekeeper pass rate**, generating structured Markdown coaching reports, and compiling synchronized side-by-side dashboard videos into `output/`.
+- Implemented foot weight transfer & heel lift biomechanical rules (Rule F) in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py), measuring `trail_heel_lift_ratio` (detecting hanging back) and `lead_heel_lift_ratio` (detecting lead foot instability) at Finish. Integrated into markdown reports and side-by-side video scorecards, and verified on `kin-1.mp4` (triggering 12.5% lead heel lift warning).
+- Logged Landmark Swap & Leg Crossing Detection (Finish Inversion Handling) as a future low-priority task in [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md).
 
 ---
 
