@@ -6,6 +6,15 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 
 ## 🔥 High Priority (Next Actions)
 
+### 🌐 Hugging Face Spaces App Deployment
+- [ ] **Deploy Streamlit Web Application to Hugging Face Spaces**
+  - **Idea**: Deploy the `streamlit_app/` web dashboard to Hugging Face Spaces (Free CPU 16GB RAM tier).
+  - **Action Items**:
+    - Create Hugging Face Space repository `sagsan/golf-swing-analyzer` (Streamlit SDK).
+    - Configure `requirements.txt` / `pyproject.toml` and setup secret environment variables if needed.
+    - Test end-to-end auto-downloading of models and pro benchmark dataset from HF Hub (`sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`).
+    - Verify fast gatekeeper rejection, preset quick-selection, side-by-side video playback, and Plotly kinematic charts on HF Spaces.
+
 ### 📁 Curated Benchmark Dataset (Pro & Test Videos)
 - [x] **Curate 10–20 Pro Videos & 10–20 Sanitized Test Videos**
   - **Idea**: Assemble a standardized, high-quality benchmark test set containing:
