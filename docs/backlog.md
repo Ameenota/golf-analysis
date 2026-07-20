@@ -7,6 +7,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 ## 🔥 High Priority (Next Actions)
 
 ### 🌐 Streamlit Community Cloud Deployment
+- [x] **Fix valid custom uploads being reported as Gatekeeper Score 0.00**
+  - **Accomplishment**: Reproduced with `kin-1.mp4` (actual gatekeeper score `0.9868`) and fixed inference-only Keras loading, restored the production 108-feature kinematic builder, preserved upload extensions/output paths, and separated pipeline errors from genuine gatekeeper rejections in the UI.
 - [x] **Deploy the public application to Streamlit Community Cloud**
   - **Accomplishment**: Configured `streamlit_app/app.py` as the public entry point, `requirements.txt` for Python runtime dependencies, and `packages.txt` for FFmpeg/system dependencies. Hugging Face Hub supplies models, benchmark data, and presets but does not host the application.
 - [x] **Retire Hugging Face Spaces application hosting**

@@ -302,3 +302,29 @@ def save_kinematic_config(filepath, config):
 def load_kinematic_config(filepath):
     with open(filepath, 'r') as f:
         return json.load(f)
+
+
+def build_kinematic_features(df, fps=None, model_dir=None):
+    """Build the exact ordered feature matrix expected by the production LSTM."""
+    if model_dir is None:
+        model_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+
+    schema_path = os.path.join(model_dir, "kinematic_schema.json")
+    config_path = os.path.join(model_dir, "kinematic_config.json")
+    if not os.path.exists(schema_path):
+        raise FileNotFoundError(f"Kinematic feature schema not found at {schema_path}")
+
+    schema = load_kinematic_config(schema_path)
+    config = load_kinematic_config(config_path) if os.path.exists(config_path) else None
+    feature_group = schema.get("feature_group", "E")
+    df_kinematic, _ = add_velocity_features(df, fps=fps, config=config)
+    feature_cols = get_milestone_feature_columns(df_kinematic, feature_group=feature_group)
+
+    expected_dim = int(schema.get("input_dim", len(feature_cols)))
+    if len(feature_cols) != expected_dim:
+        raise ValueError(
+            f"Kinematic feature extraction yielded {len(feature_cols)} features; "
+            f"the model schema expects {expected_dim}."
+        )
+
+    return feature_cols, df_kinematic[feature_cols].values.astype(np.float32)

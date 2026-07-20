@@ -392,6 +392,7 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
     if not is_duration_valid:
         return {"success": False, "validated": False, "gatekeeper_score": 0.0, "error": f"Video duration ({duration:.2f}s) exceeds max limit of {max_duration}s."}
 
+    avg_gate_prob = None
     try:
         processor = GolfVideoProcessor()
         df = processor.process_video(video_path)
@@ -404,7 +405,10 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
             return {"success": True, "validated": False, "gatekeeper_score": round(avg_gate_prob, 4), "error": "Video failed golf swing validation."}
 
         model_path = os.path.join(PROJECT_ROOT, "models", "lstm_phase_model.keras")
-        model = tf.keras.models.load_model(model_path)
+        # Inference does not need the training loss/optimizer state. Loading with
+        # compilation enabled attempts to deserialize the notebook-defined custom
+        # loss and fails in clean deployments where that function is unavailable.
+        model = tf.keras.models.load_model(model_path, compile=False)
         
         from src.kinematic_features import build_kinematic_features
         feat_cols, X_seq = build_kinematic_features(df, fps)
@@ -481,7 +485,12 @@ def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_thr
                 )
         return output
     except Exception as e:
-        return {"success": False, "validated": False, "gatekeeper_score": 0.0, "error": str(e)}
+        return {
+            "success": False,
+            "validated": False,
+            "gatekeeper_score": round(avg_gate_prob, 4) if avg_gate_prob is not None else 0.0,
+            "error": str(e),
+        }
 
 def main():
     parser = argparse.ArgumentParser(description="End-to-End Golf Swing Analyzer Inference CLI")

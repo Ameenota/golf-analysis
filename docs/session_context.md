@@ -64,6 +64,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Configured [.streamlit/config.toml](file:///Users/sagar/Documents/ML/golf-analysis/.streamlit/config.toml) with 50MB client upload size limit and dark theme styling.
   - Set application-level upload validation to accept videos from 0.1 MB through 50 MB, accommodating compact GolfDB clips.
   - Fixed uploaded-video analysis output-path construction by importing `pathlib.Path` in `analyze_swing.py`.
+  - Ignored the generated Matplotlib `.mpl_config/` runtime cache directory.
   - Renamed demo preset selectors in `streamlit_app/app.py` to Preset A (`IMG_0018`), Preset B (`IMG_6826`), and Preset C (`kin-1`), with realistic ~4.6s status progress animation.
   - Encoded dashboard output videos using ImageIO/FFmpeg `libx264` with the H.264 `avc1` tag and `yuv420p` pixel format for native HTML5 playback.
   - Restructured Tab 1 layout to place the 4-column Biomechanical Scorecard directly below the full-width side-by-side video clip.
@@ -74,13 +75,21 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Hugging Face Hub remains the external asset store at `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
   - Hugging Face Spaces hosting was attempted and abandoned after the deployment failed. The obsolete Spaces deployment script and README metadata were removed.
   - Presets now synchronize against Hugging Face Hub on each cold start, while retaining existing local copies if refresh fails.
+- Fixed the custom-upload false rejection reproduced with `data/r-videos/kin-1.mp4`:
+  - Confirmed the XGBoost gatekeeper accepts the upload-style temporary copy with a score of `0.9868`.
+  - Loaded the BiLSTM with `compile=False` so clean deployments do not need the notebook-only custom training loss.
+  - Restored the production Experiment E 108-feature inference builder using the saved schema/config artifacts.
+  - Changed Streamlit error handling so internal analysis failures display their actual error instead of being mislabeled as `Gatekeeper Score: 0.00`.
+  - Preserved `.mov`/`.mp4` upload suffixes and made generated output paths extension-independent.
+  - Verified focused end-to-end inference shapes on `kin-1`: `(92, 108)` input and `(1, 92, 9)` output; all 8 kinematic unit tests pass.
 
 ---
 
 ## Action Plan for Next Session
 
-1. **Public App Redeployment**:
-   - Confirm the Streamlit Community Cloud redeploy completes from `main`, then reboot the public app to clear its stale preset files and test both preset and uploaded-video playback.
+1. **Custom Upload Redeployment Verification**:
+   - Redeploy the Streamlit app and upload `kin-1.mp4`; confirm analysis completes and the synchronized dashboard is playable/downloadable.
+   - Profile the silent dashboard stitching stage if cloud rendering remains unusually slow.
 2. **DTL Handedness Orientation Bugfix**:
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
 3. **Golfer Centroid Tracking & Occlusion Handling**:

@@ -134,8 +134,9 @@ def main():
             st.stop()
 
         # Save to temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
-            tmp.write(uploaded_file.read())
+        upload_suffix = Path(uploaded_file.name).suffix.lower()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=upload_suffix) as tmp:
+            tmp.write(uploaded_file.getvalue())
             temp_video_path = tmp.name
 
         with st.status("Analyzing Uploaded Video...", expanded=True) as status:
@@ -148,9 +149,10 @@ def main():
                 st.stop()
 
             st.write("🤖 Stage 2 & 3: Extracting landmarks & running XGBoost gatekeeper + BiLSTM inference...")
-            out_video_path = temp_video_path.replace(".mp4", "_dashboard.mp4")
-            out_json_path = temp_video_path.replace(".mp4", "_results.json")
-            out_report_path = temp_video_path.replace(".mp4", "_report.md")
+            temp_output_base = str(Path(temp_video_path).with_suffix(""))
+            out_video_path = f"{temp_output_base}_dashboard.mp4"
+            out_json_path = f"{temp_output_base}_results.json"
+            out_report_path = f"{temp_output_base}_report.md"
 
             # Execute pipeline
             res = run_analysis(
@@ -158,12 +160,19 @@ def main():
                 view_mode=auto_view,
                 speed=slow_speed,
                 output_video_path=out_video_path,
-                save_json_path=out_json_path
+                save_json_path=out_json_path,
+                save_report_path=out_report_path,
             )
 
-            if not res or not res.get("validated", False):
+            if not res or not res.get("success", False):
+                status.update(label="Analysis Failed!", state="error")
+                error_detail = res.get("error", "Unknown pipeline error.") if res else "The analysis pipeline returned no result."
+                st.error(f"⚠️ Video analysis failed: {error_detail}")
+                st.stop()
+
+            if not res.get("validated", False):
                 status.update(label="Validation Failed!", state="error")
-                score = res.get("gatekeeper_score", 0.0) if res else 0.0
+                score = res.get("gatekeeper_score", 0.0)
                 st.error(f"⚠️ Invalid Video: No golf swing detected (Gatekeeper Score: {score:.2f}). Please upload a valid swing video.")
                 st.stop()
 
