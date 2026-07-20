@@ -232,11 +232,12 @@ def create_synchronized_dashboard(
     try:
         import imageio
         writer = imageio.get_writer(output_path, fps=out_fps, codec="libx264", pixelformat="yuv420p")
-        use_imageio = True
-    except Exception:
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        writer = cv2.VideoWriter(output_path, fourcc, out_fps, (1280, 720))
-        use_imageio = False
+    except Exception as exc:
+        raise RuntimeError(
+            "Could not initialize the browser-compatible H.264 video encoder. "
+            "Install or repair imageio-ffmpeg/libx264; refusing to create an "
+            "MP4V video that browsers cannot play."
+        ) from exc
     
     # Layout placements
     # Left Box: x=70 to 570, y=100 to 600 (500x500)
@@ -301,13 +302,7 @@ def create_synchronized_dashboard(
         draw_coaching_metrics(canvas, bio_results, f, milestones_user, y_offset=615)
         
         # Write frame
-        if use_imageio:
-            writer.append_data(canvas[:, :, ::-1])
-        else:
-            writer.write(canvas)
+        writer.append_data(canvas[:, :, ::-1])
         
-    if use_imageio:
-        writer.close()
-    else:
-        writer.release()
+    writer.close()
     print(f"Synchronized comparison video compiled successfully to: {output_path}")

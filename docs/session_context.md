@@ -58,27 +58,28 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Logged DTL Handedness Misclassification Bug (e.g. `IMG_1103.mov`) into `docs/backlog.md`.
 - Built Hugging Face asset management system & executed 100% upload:
   - Created [scripts/upload_assets_to_hf.py](file:///Users/sagar/Documents/ML/golf-analysis/scripts/upload_assets_to_hf.py) with `HF_HUB_DISABLE_XET=1` and pushed ML models (`sagsan/golf-swing-analyzer-models`) and pro/sample dataset assets (`sagsan/golf-swing-analyzer-dataset`) to Hugging Face Hub.
-  - Created [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) for universal local and cloud auto-downloading of models and pro benchmark assets into `.cache/`.
+  - Created [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) for local and cloud downloading of models into `models/` and benchmark/preset assets into `data/`.
   - Packaged 3 pre-computed demo presets (`IMG_0018.MOV`, `IMG_6826.MOV`, `kin-1.mp4`) into `data/sample_presets/` with `scripts/prepare_sample_presets.py`.
 - Built and refined segregated Streamlit dashboard application in `streamlit_app/`:
   - Configured [.streamlit/config.toml](file:///Users/sagar/Documents/ML/golf-analysis/.streamlit/config.toml) with 50MB client upload size limit and dark theme styling.
   - Renamed demo preset selectors in `streamlit_app/app.py` to Preset A (`IMG_0018`), Preset B (`IMG_6826`), and Preset C (`kin-1`), with realistic ~4.6s status progress animation.
-  - Re-encoded dashboard output videos using OpenCV `avc1` (H.264) FourCC codec to enable native HTML5 video playback in all web browsers.
+  - Encoded dashboard output videos using ImageIO/FFmpeg `libx264` with the H.264 `avc1` tag and `yuv420p` pixel format for native HTML5 playback.
   - Restructured Tab 1 layout to place the 4-column Biomechanical Scorecard directly below the full-width side-by-side video clip.
   - Enhanced Tab 3 Plotly kinematic charts in [streamlit_app/charts.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/charts.py) with auto-zoomed $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered milestone vertical text annotations, and a **Matched Pro Trajectory Overlay (Dashed Gold Line `🟡 Matched Pro (Name)`)** compared against the **User Swing (Solid Green Line `🟢 User Swing`)** with interactive legend keys.
 
-- Deployed Streamlit Web Application to Hugging Face Spaces:
-  - Created Hugging Face Space repository `sagsan/golf-swing-analyzer`.
-  - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
-  - Created container build configs [requirements.txt](file:///Users/sagar/Documents/ML/golf-analysis/requirements.txt), [packages.txt](file:///Users/sagar/Documents/ML/golf-analysis/packages.txt), [README.md](file:///Users/sagar/Documents/ML/golf-analysis/README.md), and automation script [scripts/deploy_to_hf_space.py](file:///Users/sagar/Documents/ML/golf-analysis/scripts/deploy_to_hf_space.py).
-  - Executed automated upload of application code, dependencies, and Streamlit dashboard to Hugging Face Spaces.
+- Deployed the public application to Streamlit Community Cloud from the GitHub `main` branch:
+  - The application entry point is `streamlit_app/app.py`; Python and system dependencies are declared in `requirements.txt` and `packages.txt`.
+  - Hugging Face Hub remains the external asset store at `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
+  - Hugging Face Spaces hosting was attempted and abandoned after the deployment failed. The obsolete Spaces deployment script and README metadata were removed.
+  - Presets now synchronize against Hugging Face Hub on each cold start, while retaining existing local copies if refresh fails.
 
 ---
 
 ## Action Plan for Next Session
 
-1. **DTL Handedness Orientation Bugfix**:
+1. **Public App Redeployment**:
+   - Confirm the Streamlit Community Cloud redeploy completes from `main`, then reboot the public app to clear its stale preset files and test both preset and uploaded-video playback.
+2. **DTL Handedness Orientation Bugfix**:
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
-2. **Golfer Centroid Tracking & Occlusion Handling**:
+3. **Golfer Centroid Tracking & Occlusion Handling**:
    - Implement centroid lock-on to distinguish primary golfer from background bystanders.
-

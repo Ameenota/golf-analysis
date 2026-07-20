@@ -6,9 +6,13 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 
 ## 🔥 High Priority (Next Actions)
 
-### 🌐 Hugging Face Spaces App Deployment
-- [x] **Deploy Streamlit Web Application to Hugging Face Spaces**
-  - **Accomplishment**: Created Hugging Face Space repository `sagsan/golf-swing-analyzer`. Added `requirements.txt`, `packages.txt`, `README.md` with Streamlit Space metadata, and updated `src/utils/hf_downloader.py` default repo paths to `sagsan/...`. Built `scripts/deploy_to_hf_space.py` and uploaded application code and assets to Hugging Face.
+### 🌐 Streamlit Community Cloud Deployment
+- [x] **Deploy the public application to Streamlit Community Cloud**
+  - **Accomplishment**: Configured `streamlit_app/app.py` as the public entry point, `requirements.txt` for Python runtime dependencies, and `packages.txt` for FFmpeg/system dependencies. Hugging Face Hub supplies models, benchmark data, and presets but does not host the application.
+- [x] **Retire Hugging Face Spaces application hosting**
+  - **Outcome**: The Spaces deployment was attempted and failed. Its deployment script and README metadata were removed; historical context remains in `docs/history.md`.
+- [x] **Require browser-compatible generated videos**
+  - **Accomplishment**: Removed the silent OpenCV `mp4v` fallback, made H.264/yuv420p output mandatory, and added an inline MP4 download fallback beneath the Streamlit video heading.
 
 ### 📁 Curated Benchmark Dataset (Pro & Test Videos)
 - [x] **Curate 10–20 Pro Videos & 10–20 Sanitized Test Videos**
@@ -127,4 +131,3 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Accomplishment**: Created `src/kinematic_features.py` (centered velocity differences & motion energy metrics) and ran a 5-experiment ablation study (`scratch/train_kinematic_ablations.py`). Experiment E (108 features) achieved **2.61 frames MAE** (**14.13% improvement** over 3.04 baseline), passed all promotion criteria (7/8 milestones improved), and was promoted to `models/lstm_phase_model.keras`. Integrated into `analyze_swing.py`, achieving **2.45 frames overall MAE** on batch pipeline verification.
 - [x] **Decoupled Rolling Window Gatekeeper & Video Duration Validation**
   - **Accomplishment**: Decoupled the XGBoost binary validator from [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) into the modular class `GolfSwingDetector` in [detector.py](file:///Users/sagar/Documents/ML/golf-analysis/src/detector.py). Implemented 2.0-second rolling window validation (eliminating long-video dilution bug) and configured a 1-minute early duration gatekeeper check. Verified with a new 305-video comparative evaluation script achieving 97.4% overall accuracy and 98.4% recall.
-

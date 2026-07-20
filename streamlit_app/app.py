@@ -11,7 +11,7 @@ import pandas as pd
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.utils.hf_downloader import ensure_all_assets
+from src.utils.hf_downloader import ensure_all_assets, ensure_sample_presets_downloaded
 from analyze_swing import run_analysis, GolfSwingDetector
 from streamlit_app.charts import create_spine_angle_chart, create_wrist_velocity_chart
 
@@ -195,8 +195,16 @@ def main():
         # Tab 1: Video & Scorecard Badges Below
         with tab_video:
             st.markdown(f"#### 🎥 Synchronized Pro Comparison (`{analysis_data['source']}`)")
-            if os.path.exists(analysis_data["video_path"]):
-                st.video(analysis_data["video_path"], format="video/mp4", autoplay=True, loop=True)
+            video_path = analysis_data["video_path"]
+            if os.path.exists(video_path):
+                with open(video_path, "rb") as video_file:
+                    st.download_button(
+                        "⬇️ Video not playing? Download it here",
+                        data=video_file,
+                        file_name=Path(video_path).name,
+                        mime="video/mp4",
+                    )
+                st.video(video_path, format="video/mp4", autoplay=True, loop=True)
             else:
                 st.warning("Side-by-side video clip unavailable.")
 

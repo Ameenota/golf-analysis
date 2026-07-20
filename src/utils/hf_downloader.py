@@ -55,22 +55,23 @@ def ensure_pro_dataset_downloaded(repo_id: str = None):
             print(f"  ⚠️ Warning: Could not download pro dataset from {repo_id}: {e}")
 
 def ensure_sample_presets_downloaded(repo_id: str = None):
-    """Ensures pre-computed sample dashboard presets exist locally in data/sample_presets/."""
+    """Syncs pre-computed sample dashboard presets into data/sample_presets/."""
     repo_id = repo_id or DEFAULT_DATASET_REPO
     presets_dir = PROJECT_ROOT / "data" / "sample_presets"
-    manifest_file = presets_dir / "manifest.json"
-    
-    if not manifest_file.exists():
-        print(f"📥 Downloading sample presets from Hugging Face ({repo_id})...")
-        try:
-            snapshot_download(
-                repo_id=repo_id,
-                repo_type="dataset",
-                allow_patterns="sample_presets/*",
-                local_dir=str(PROJECT_ROOT / "data")
-            )
-            print("  └─ Sample presets download complete!")
-        except Exception as e:
+
+    print(f"📥 Syncing sample presets from Hugging Face Hub ({repo_id})...")
+    try:
+        snapshot_download(
+            repo_id=repo_id,
+            repo_type="dataset",
+            allow_patterns="sample_presets/*",
+            local_dir=str(PROJECT_ROOT / "data")
+        )
+        print(f"  └─ Sample presets are current: {presets_dir}")
+    except Exception as e:
+        if (presets_dir / "manifest.json").exists():
+            print(f"  ⚠️ Warning: Could not refresh presets; using local copies: {e}")
+        else:
             print(f"  ⚠️ Warning: Could not download sample presets from {repo_id}: {e}")
 
 def ensure_all_assets(models_repo: str = None, dataset_repo: str = None):

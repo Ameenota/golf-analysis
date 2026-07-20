@@ -1,30 +1,52 @@
----
-title: Golf Swing Analyzer & Coaching Dashboard
-emoji: ⛳
-colorFrom: green
-colorTo: green
-sdk: streamlit
-sdk_version: 1.42.0
-app_file: streamlit_app/app.py
-pinned: false
-license: mit
----
-
 # ⛳ Golf Swing Analyzer & Coaching Dashboard
 
-An end-to-end Computer Vision and Machine Learning application that validates golf swing videos, pinpoints 8 key swing milestones using a Bidirectional LSTM, performs 2D biomechanical analysis, and provides synchronized pro comparison overlays and interactive kinematic charts.
+An end-to-end computer-vision application that validates golf swing videos, identifies eight swing milestones with a bidirectional LSTM, performs biomechanical analysis, and generates synchronized professional comparison videos.
 
-## 🚀 Key Features
+## Features
 
-- **🤖 Gatekeeper Validation**: XGBoost binary classifier (99.0% accuracy) rejecting non-golf videos and long clips (>60s).
-- **🧠 BiLSTM Milestone Locator**: Predicts 8 chronological swing events (*Address, Toe-Up, Mid-Backswing, Top, Mid-Downswing, Impact, Mid-Follow-Through, Finish*) with an overall MAE of **2.66 frames**.
-- **📐 Biomechanical Scorecard**: Measures Spine Tilt loss, Lead Arm Straightness, Hip Sway Ratio, and Foot Weight Transfer.
-- **🎥 Side-by-Side Pro Comparison**: Dynamic pro matchmaker against 16 pro reference models with synchronized speed control.
-- **📈 Kinematic Charts**: Interactive Plotly plots comparing user swing kinematics against matched pro trajectories.
+- XGBoost gatekeeper validation for non-golf and overlong videos.
+- Bidirectional LSTM detection of eight chronological swing milestones.
+- Biomechanical scorecard and coaching feedback.
+- H.264 side-by-side professional comparison videos.
+- Interactive Plotly kinematic charts.
+- Three precomputed demonstration presets.
 
-## 📦 Assets & Models
-- **ML Models**: [sagsan/golf-swing-analyzer-models](https://huggingface.co/sagsan/golf-swing-analyzer-models)
-- **Dataset & Presets**: [sagsan/golf-swing-analyzer-dataset](https://huggingface.co/datasets/sagsan/golf-swing-analyzer-dataset)
+## Run locally
 
----
-*Built with OpenCV, MediaPipe, TensorFlow/Keras, XGBoost, and Streamlit.*
+This project uses `uv` for Python dependency management and execution.
+
+```bash
+uv sync
+uv run streamlit run streamlit_app/app.py
+```
+
+The Streamlit configuration in `.streamlit/config.toml` limits uploads to 50 MB.
+
+## Public deployment
+
+The public application is deployed with Streamlit Community Cloud from the `main` branch of [Ameenota/golf-analysis](https://github.com/Ameenota/golf-analysis). The entry point is:
+
+```text
+streamlit_app/app.py
+```
+
+Streamlit Community Cloud installs Python packages from `requirements.txt` and operating-system packages from `packages.txt`. After pushing application or dependency changes, confirm the app redeploys successfully from **Manage app**. Use **Reboot app** when a clean runtime filesystem is needed.
+
+Generated comparison videos require FFmpeg/ImageIO and are encoded as H.264 (`libx264`, `yuv420p`). The application deliberately fails with an encoding error instead of producing browser-incompatible `mp4v` video.
+
+## Hugging Face Hub assets
+
+Hugging Face is used only for application assets, not application hosting:
+
+- [ML models](https://huggingface.co/sagsan/golf-swing-analyzer-models)
+- [Benchmark dataset and presets](https://huggingface.co/datasets/sagsan/golf-swing-analyzer-dataset)
+
+On each application cold start, missing models and benchmark data are downloaded. Presets are synchronized against the Hub so updated H.264 files replace stale runtime copies. If the Hub is temporarily unavailable, already-downloaded presets remain usable.
+
+To publish updated local models, benchmark assets, or presets:
+
+```bash
+uv run python scripts/upload_assets_to_hf.py
+```
+
+Hugging Face Spaces was evaluated as an application host and abandoned; that outcome is retained in `docs/history.md`.

@@ -1,12 +1,15 @@
 # Project History Log
 
-- Logged Hugging Face Spaces App Deployment task to `docs/backlog.md` and updated `docs/session_context.md` with explicit wrap-up action plan.
+- Retired Hugging Face Spaces as the application host after an unsuccessful deployment attempt; the public app is deployed from `main` on Streamlit Community Cloud, while Hugging Face Hub remains the model, benchmark, and preset asset store.
+- Replaced the obsolete Spaces deployment metadata/script with Streamlit Community Cloud deployment instructions, aligned runtime requirements, fixed the missing preset-downloader import, and made cold starts refresh changed preset assets from Hugging Face Hub.
+- Made H.264 (`libx264`, `yuv420p`) mandatory for generated comparison videos, removed the browser-incompatible `mp4v` fallback, and added an inline playback-failure download button to the Streamlit video panel.
+- Logged the Hugging Face Spaces deployment experiment; it was later retired in favor of Streamlit Community Cloud.
 - Added `**kwargs` protection to `create_spine_angle_chart()` and `create_wrist_velocity_chart()` in `streamlit_app/charts.py` to ensure complete backwards compatibility with cached Streamlit process calls.
 - Added Matched Pro trajectory overlay (Dashed Gold Line `🟡 Matched Pro (Name)`) to Plotly spine tilt and hand acceleration charts in `streamlit_app/charts.py`, including explicit interactive legend keys comparing User (Solid Green/Blue) vs. Pro (Dashed Gold).
 - Fixed `TypeError` in `streamlit_app/app.py` by passing `metrics=metrics` explicitly as a keyword argument to `create_spine_angle_chart()` and `create_wrist_velocity_chart()`.
 - Redesigned Tab 3 kinematic charts in `streamlit_app/charts.py` to auto-zoom the $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered vertical milestone annotations to prevent label overlapping, and generated realistic physical biomechanical curves for spine tilt and hand acceleration release peaks.
 - Renamed demo presets to Preset A, Preset B, and Preset C in `streamlit_app/app.py`, increased simulated progress duration to ~4.6s, and placed the Biomechanical Scorecard below the full-width side-by-side video.
-- Re-encoded sample preset dashboard videos using OpenCV `avc1` (H.264) FourCC codec to fix blank video playback issues in web browsers.
+- Re-encoded sample preset dashboard videos as H.264 `avc1`/`yuv420p` to fix blank playback in web browsers.
 - Disabled `hf-xet` middleware (`HF_HUB_DISABLE_XET=1`) in `scripts/upload_assets_to_hf.py` to ensure robust standard HTTP/LFS commits to Hugging Face Model & Dataset repositories.
 - Built a segregated Streamlit web dashboard in `streamlit_app/` featuring preset demo selectors, 50MB file size validation, fast XGBoost non-golf gatekeeper rejection, and a 3-tab interactive dashboard (Tab 1: Synced Video & Scorecard, Tab 2: Coaching Report & Drills, Tab 3: Interactive Plotly Kinematic Charts).
 - Developed `scripts/upload_assets_to_hf.py` and `src/utils/hf_downloader.py` using `huggingface_hub` for automated uploading and universal local/cloud auto-downloading of ML models (`sagsan/golf-swing-analyzer-models`) and dataset assets (`sagsan/golf-swing-analyzer-dataset`).
@@ -111,13 +114,10 @@
 - Created `scripts/curate_benchmark_dataset.py` assembling 16 curated GolfDB pro videos and 7 user test videos into `data/benchmark/` with `manifest.json`.
 - Implemented 98.1% accurate hybrid 2D/3D camera view auto-detection (`detect_camera_view()`) in `analyze_swing.py`, setting `--view auto` as the default CLI parameter.
 - Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
-- Created Hugging Face Space repository [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
+- Attempted to deploy a Hugging Face Space at `sagsan/golf-swing-analyzer`; the hosting approach was later abandoned after it failed to meet the application's deployment needs.
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
 - Added `imageio` and `imageio-ffmpeg` dependencies and updated [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) to write native web-compatible H.264 `yuv420p` MP4 files (`libx264`/`avc1`). Re-encoded all sample preset videos and uploaded to Hugging Face Dataset Hub.
 - Replaced custom base64 HTML `<video>` embed in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) with native `st.video(path, format="video/mp4", autoplay=True, loop=True)` to prevent memory exhaustion and base64 string truncation errors on Streamlit Cloud.
-
-
-
 
 
 
