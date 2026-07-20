@@ -1,5 +1,6 @@
 # Project History Log
 
+- Redesigned Tab 3 kinematic charts in `streamlit_app/charts.py` to auto-zoom the $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered vertical milestone annotations to prevent label overlapping, and generated realistic physical biomechanical curves for spine tilt and hand acceleration release peaks.
 - Renamed demo presets to Preset A, Preset B, and Preset C in `streamlit_app/app.py`, increased simulated progress duration to ~4.6s, and placed the Biomechanical Scorecard below the full-width side-by-side video.
 - Re-encoded sample preset dashboard videos using OpenCV `avc1` (H.264) FourCC codec to fix blank video playback issues in web browsers.
 - Disabled `hf-xet` middleware (`HF_HUB_DISABLE_XET=1`) in `scripts/upload_assets_to_hf.py` to ensure robust standard HTTP/LFS commits to Hugging Face Model & Dataset repositories.

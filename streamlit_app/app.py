@@ -247,18 +247,12 @@ def main():
         with tab_charts:
             st.markdown("### 📈 Interactive Swing Kinematics & Timing")
             milestones = results.get("milestones", {})
+            metrics = results.get("biomechanical_metrics", {})
             
-            # Create synthetic/dummy dataframe for plot visualization if raw coordinates aren't cached
-            df_dummy = pd.DataFrame({
-                "spine_tilt": [metrics.get("spine_tilt_at_address", 5.0) + (i*0.05 if i < 300 else 0) for i in range(350)],
-                "smooth_left_wrist_vel": [0.01 * (i % 30) for i in range(350)],
-                "smooth_right_wrist_vel": [0.015 * (i % 30) for i in range(350)]
-            })
-            
-            fig_spine = create_spine_angle_chart(df_dummy, milestones)
+            fig_spine = create_spine_angle_chart(pd.DataFrame(), milestones, metrics)
             st.plotly_chart(fig_spine, use_container_width=True)
             
-            fig_vel = create_wrist_velocity_chart(df_dummy, milestones)
+            fig_vel = create_wrist_velocity_chart(pd.DataFrame(), milestones, metrics)
             st.plotly_chart(fig_vel, use_container_width=True)
 
 if __name__ == "__main__":
