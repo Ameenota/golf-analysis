@@ -89,4 +89,6 @@
 - Promoted Experiment E model weights to `models/lstm_phase_model.keras` and saved schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
 - Integrated dynamic kinematic feature extraction into `analyze_swing.py` and set sandbox permission environment overrides (`KERAS_HOME` and `MPLCONFIGDIR`).
 - Executed `scratch/verify_pipeline.py` batch test across 10 sample videos, achieving an overall pipeline MAE of **2.45 frames** (100% video validation success rate).
+- Created dedicated ML Experiments & Decision Log at `docs/experiments.md` to permanently document all future ablation studies, feature specifications, performance tables, and promotion decisions, and updated `AGENTS.md`.
+
 
