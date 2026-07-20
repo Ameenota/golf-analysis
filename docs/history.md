@@ -1,5 +1,6 @@
 # Project History Log
 
+- Fixed uploaded-video analysis failing with `NameError: Path is not defined` by importing `pathlib.Path` in `analyze_swing.py` for default output-path construction.
 - Lowered the Streamlit upload minimum from 1.0 MB to 0.1 MB so compact GolfDB clips are accepted while retaining the 50 MB maximum.
 - Retired Hugging Face Spaces as the application host after an unsuccessful deployment attempt; the public app is deployed from `main` on Streamlit Community Cloud, while Hugging Face Hub remains the model, benchmark, and preset asset store.
 - Replaced the obsolete Spaces deployment metadata/script with Streamlit Community Cloud deployment instructions, aligned runtime requirements, fixed the missing preset-downloader import, and made cold starts refresh changed preset assets from Hugging Face Hub.
@@ -119,7 +120,6 @@
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
 - Added `imageio` and `imageio-ffmpeg` dependencies and updated [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) to write native web-compatible H.264 `yuv420p` MP4 files (`libx264`/`avc1`). Re-encoded all sample preset videos and uploaded to Hugging Face Dataset Hub.
 - Replaced custom base64 HTML `<video>` embed in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) with native `st.video(path, format="video/mp4", autoplay=True, loop=True)` to prevent memory exhaustion and base64 string truncation errors on Streamlit Cloud.
-
 
 
 
