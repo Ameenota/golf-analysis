@@ -274,8 +274,8 @@ def create_synchronized_dashboard(
                     (390, 70), font, 0.45, (200, 200, 200), 1, cv2.LINE_AA)
         
         # Labels below videos
-        cv2.putText(canvas, "USER SWING", (70, 93), font, 0.45, (0, 255, 0), 1, cv2.LINE_AA)
-        cv2.putText(canvas, f"{pro_name.upper()} (REFERENCE)", (710, 93), font, 0.45, (255, 200, 0), 1, cv2.LINE_AA)
+        cv2.putText(canvas, f"USER SWING (F{f:03d})", (70, 93), font, 0.45, (0, 255, 0), 1, cv2.LINE_AA)
+        cv2.putText(canvas, f"{pro_name.upper()} (REFERENCE F{p_idx:03d})", (710, 93), font, 0.45, (255, 200, 0), 1, cv2.LINE_AA)
         
         # 5. Draw Milestone Tracker (Center Divider: x = 570 to 710)
         current_m_idx = get_current_milestone_index(f, milestones_user)

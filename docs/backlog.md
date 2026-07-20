@@ -102,6 +102,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Idea**: Detect MediaPipe left/right leg label swaps during full rotational follow-through by checking 3D Z-depth ordering and tracking trajectory sign flips ($X_{\text{left}} - X_{\text{right}}$) from Address to Finish.
 
 ### 🎨 Visual Overlay Improvements
+- [x] **Display source frame numbers on the dashboard video labels**
+  - **Accomplishment**: The synchronized output video now labels each frame as `USER SWING (FXXX)` and `PRO (REFERENCE FXXX)` using each video's zero-padded source frame index.
 - [ ] **Persistent Milestone Log Overlay (Option B)**
   - **Idea**: Add a permanent list in the corner of the annotated video that updates chronologically as milestones are hit, preventing confusion in slow-motion play.
 
