@@ -62,6 +62,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Packaged 3 pre-computed demo presets (`IMG_0018.MOV`, `IMG_6826.MOV`, `kin-1.mp4`) into `data/sample_presets/` with `scripts/prepare_sample_presets.py`.
 - Built and refined segregated Streamlit dashboard application in `streamlit_app/`:
   - Configured [.streamlit/config.toml](file:///Users/sagar/Documents/ML/golf-analysis/.streamlit/config.toml) with 50MB client upload size limit and dark theme styling.
+  - Set application-level upload validation to accept videos from 0.1 MB through 50 MB, accommodating compact GolfDB clips.
   - Renamed demo preset selectors in `streamlit_app/app.py` to Preset A (`IMG_0018`), Preset B (`IMG_6826`), and Preset C (`kin-1`), with realistic ~4.6s status progress animation.
   - Encoded dashboard output videos using ImageIO/FFmpeg `libx264` with the H.264 `avc1` tag and `yuv420p` pixel format for native HTML5 playback.
   - Restructured Tab 1 layout to place the 4-column Biomechanical Scorecard directly below the full-width side-by-side video clip.

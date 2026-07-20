@@ -129,8 +129,8 @@ def main():
     elif uploaded_file is not None:
         # Stage 0: Client/Header Byte Size Rejection
         file_size_mb = uploaded_file.size / (1024 * 1024)
-        if file_size_mb < 1.0 or file_size_mb > 50.0:
-            st.error(f"⚠️ Video file size invalid ({file_size_mb:.1f} MB). Must be between 1 MB and 50 MB.")
+        if file_size_mb < 0.1 or file_size_mb > 50.0:
+            st.error(f"⚠️ Video file size invalid ({file_size_mb:.1f} MB). Must be between 0.1 MB and 50 MB.")
             st.stop()
 
         # Save to temporary file
