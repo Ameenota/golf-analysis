@@ -248,11 +248,25 @@ def main():
             st.markdown("### 📈 Interactive Swing Kinematics & Timing")
             milestones = results.get("milestones", {})
             metrics = results.get("biomechanical_metrics", {})
+            pro_name = results.get("matched_pro", "Matched Pro")
+            pro_metrics = results.get("matched_pro_metrics", {})
             
-            fig_spine = create_spine_angle_chart(pd.DataFrame(), milestones, metrics=metrics)
+            fig_spine = create_spine_angle_chart(
+                df=pd.DataFrame(),
+                milestones=milestones,
+                metrics=metrics,
+                pro_name=pro_name,
+                pro_metrics=pro_metrics
+            )
             st.plotly_chart(fig_spine, use_container_width=True)
             
-            fig_vel = create_wrist_velocity_chart(pd.DataFrame(), milestones, metrics=metrics)
+            fig_vel = create_wrist_velocity_chart(
+                df=pd.DataFrame(),
+                milestones=milestones,
+                metrics=metrics,
+                pro_name=pro_name,
+                pro_metrics=pro_metrics
+            )
             st.plotly_chart(fig_vel, use_container_width=True)
 
 if __name__ == "__main__":
