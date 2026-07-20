@@ -113,7 +113,8 @@
 - Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
 - Created Hugging Face Space repository [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
-- Added `imageio` and `imageio-ffmpeg` dependencies and updated [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) to write native web-compatible H.264 `yuv420p` MP4 files (`libx264`/`avc1`). Re-encoded all sample preset videos and uploaded to Hugging Face Dataset Hub, resolving HTML5 video playback errors on Streamlit Cloud.
+- Added `imageio` and `imageio-ffmpeg` dependencies and updated [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) to write native web-compatible H.264 `yuv420p` MP4 files (`libx264`/`avc1`). Re-encoded all sample preset videos and uploaded to Hugging Face Dataset Hub.
+- Replaced custom base64 HTML `<video>` embed in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) with native `st.video(path, format="video/mp4", autoplay=True, loop=True)` to prevent memory exhaustion and base64 string truncation errors on Streamlit Cloud.
 
 
 
