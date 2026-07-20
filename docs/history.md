@@ -1,7 +1,7 @@
 # Project History Log
 
 - Added repository-wide, case-insensitive `.gitignore` rules for common video formats and verified that no video assets are currently tracked.
-- Fixed Streamlit Community Cloud custom-upload analysis failing at MediaPipe landmark extraction with `libGLESv2.so.2: cannot open shared object file` by adding Debian's `libgles2` runtime package to `packages.txt`.
+- Fixed Streamlit Community Cloud custom-upload analysis failing at MediaPipe landmark extraction with missing `libGLESv2.so.2` and subsequently `libEGL.so.1` shared libraries by adding Debian's `libgles2` and `libegl1` runtime packages to `packages.txt`.
 - Fixed valid custom uploads being falsely reported as `Gatekeeper Score: 0.00`: load the BiLSTM for inference with `compile=False`, restore the schema-driven 108-feature kinematic builder, preserve upload extensions and output paths, retain computed gatekeeper scores on downstream failures, and distinguish analysis errors from genuine video rejection in Streamlit.
 - Added the generated Matplotlib `.mpl_config/` runtime cache directory to `.gitignore`.
 - Fixed uploaded-video analysis failing with `NameError: Path is not defined` by importing `pathlib.Path` in `analyze_swing.py` for default output-path construction.

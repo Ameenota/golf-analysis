@@ -7,8 +7,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 ## 🔥 High Priority (Next Actions)
 
 ### 🌐 Streamlit Community Cloud Deployment
-- [x] **Install the MediaPipe OpenGL ES runtime on Streamlit Cloud**
-  - **Accomplishment**: Added Debian's `libgles2` system package, which supplies the `libGLESv2.so.2` shared library required by the Linux MediaPipe wheel during custom-upload landmark extraction.
+- [x] **Install the MediaPipe EGL/OpenGL ES runtime on Streamlit Cloud**
+  - **Accomplishment**: Added Debian's `libegl1` and `libgles2` system packages, which supply the `libEGL.so.1` and `libGLESv2.so.2` shared libraries required by the Linux MediaPipe wheel during custom-upload landmark extraction.
 - [x] **Fix custom-upload analysis hanging indefinitely during BiLSTM inference**
   - **Accomplishment**: Stack sampling identified a deadlock in Keras `model.predict()`'s `tf.data` prefetch path caused by TensorFlow/PyArrow Abseil symbol interaction. Replaced it with direct forward inference, applied softmax to the model logits, fixed the 9-class alignment input, and isolated MediaPipe timestamp state per video. Verified the 231 KB `kin-1` fixture completes through H.264 dashboard generation in 7.63 seconds.
 - [x] **Preprocess deterministic professional reference videos**

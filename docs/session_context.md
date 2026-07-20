@@ -89,14 +89,14 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Added zero-padded source frame numbers to both synchronized dashboard labels (`USER SWING (FXXX)` and `PRO (REFERENCE FXXX)`).
 - Audited Address spine tilt across all 16 curated professional clips and recalibrated the Down-The-Line pass range from 30°–45° to 24°–42°. Added a backlog item for future 2° borderline tolerance bands while preserving warnings for clearly upright or horizontal posture.
 - Removed the misleading Streamlit `Slow-Motion Video Speed` slider because changing it caused a complete video regeneration rather than interactive playback-speed adjustment. Uploads now use the fixed pipeline default.
-- Fixed Streamlit Community Cloud analysis failing at MediaPipe import/runtime initialization because `libGLESv2.so.2` was absent. Added Debian's `libgles2` package to `packages.txt`; the change takes effect after Streamlit rebuilds the app environment.
+- Fixed Streamlit Community Cloud analysis failing at MediaPipe import/runtime initialization because `libGLESv2.so.2` and then `libEGL.so.1` were absent. Added Debian's `libgles2` and `libegl1` packages to `packages.txt`; the change takes effect after Streamlit rebuilds the app environment.
 
 ---
 
 ## Action Plan for Next Session
 
 1. **Streamlit Runtime Fix Verification**:
-   - Push the `packages.txt` change, wait for Community Cloud to rebuild, then upload `kin-1.mp4` and confirm landmark extraction and synchronized dashboard generation complete without the `libGLESv2.so.2` error.
+   - Wait for Community Cloud to rebuild the updated `packages.txt`, then upload `kin-1.mp4` and confirm landmark extraction and synchronized dashboard generation complete without missing EGL/GLES library errors.
 2. **DTL Handedness Orientation Bugfix**:
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
 3. **Golfer Centroid Tracking & Occlusion Handling**:
