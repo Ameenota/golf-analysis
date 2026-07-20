@@ -64,11 +64,13 @@ def load_preset_data(preset_key: str):
     with open(presets_dir / "report.md", "r") as f:
         report_md = f.read()
         
-    video_path = str(presets_dir / "dashboard.mp4")
-    
+    video_path = presets_dir / "dashboard.mp4"
+    if not video_path.exists():
+        ensure_sample_presets_downloaded()
+        
     return {
         "title": meta["title"],
-        "video_path": video_path,
+        "video_path": str(video_path),
         "results": results,
         "report_md": report_md
     }
@@ -194,7 +196,8 @@ def main():
         with tab_video:
             st.markdown(f"#### 🎥 Synchronized Pro Comparison (`{analysis_data['source']}`)")
             if os.path.exists(analysis_data["video_path"]):
-                st.video(analysis_data["video_path"], format="video/mp4")
+                with open(analysis_data["video_path"], "rb") as vf:
+                    st.video(vf.read(), format="video/mp4")
             else:
                 st.warning("Side-by-side video clip unavailable.")
 

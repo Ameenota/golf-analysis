@@ -113,7 +113,8 @@
 - Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
 - Created Hugging Face Space repository [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
-- Removed `index.html` static landing page locally and from Hugging Face Space repository to prioritize direct Streamlit dashboard hosting.
+- Updated [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) to read video bytes in binary mode (`open(..., "rb").read()`) and added auto-redownload checks for `dashboard.mp4` presets, resolving video playback streaming issues on Streamlit Community Cloud.
+
 
 
 
