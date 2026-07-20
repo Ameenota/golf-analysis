@@ -6,6 +6,13 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 
 ## 🔥 High Priority (Next Actions)
 
+### 📁 Curated Benchmark Dataset (Pro & Test Videos)
+- [x] **Curate 10–20 Pro Videos & 10–20 Sanitized Test Videos**
+  - **Idea**: Assemble a standardized, high-quality benchmark test set containing:
+    - **16 Pro Videos**: Selected from GolfDB covering DTL & FO views, male & female pros (Tiger Woods, Phil Mickelson, Sandra Gal, Steve Stricker, Greg Norman, etc.), right/left handedness, and varied clubs.
+    - **7 Test Videos**: Sanitized user test clips in `data/benchmark/user_videos/`.
+  - **Goal**: Created `scripts/curate_benchmark_dataset.py` and output `data/benchmark/manifest.json`.
+
 ### 🧹 Technical Debt & Dependency Cleanup
 - [x] **Remove PyTorch and Fastai Dependencies**
   - **Idea**: Clean up the codebase to reduce dependency bloat and environment size.
@@ -44,12 +51,12 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
     - Chronological consistency ($T_1 < T_2 < \dots < T_8$).
     - Relative frame range boundary checks.
     - Physical downswing duration validation (must be between 6 and 12 frames at 30 FPS).
-- [ ] **Auto View Detection (DTL vs. FO)**
+- [x] **Auto View Detection (DTL vs. FO)**
   - **Idea**: Dynamically detect if an incoming video is Down-The-Line or Face-On.
-  - **Approach**: Implement the hybrid 2D/3D heuristic (`norm_sh_width > 0.45` -> FO, `< 0.20` -> DTL, fallback to `sh_z_diff <= 0.21` -> FO) which achieved **98.1% accuracy** on the GolfDB dataset. Add a `--view auto` CLI option in `analyze_swing.py`.
-- [ ] **Down-The-Line Handedness Detection Correction**
-  - **Issue**: Standard DTL video coordinate space is inverted compared to Face-On (FO). A right-handed golfer facing left in DTL moves their hands to the right (larger X) at the top of the backswing (`wrists_x >= torso_x`), which the algorithm misclassifies as Left-Handed, leading to inverted limb calculations and false bent lead arm warnings (e.g. `IMG_6826.MOV`).
-  - **Fix**: Update `detect_handedness()` in `src/coaching_engine.py` to check the detected `view` and invert the $x$-coordinate comparison condition when the view is `down-the-line`.
+  - **Accomplishment**: Implemented 98.1% accurate hybrid 2D/3D heuristic (`detect_camera_view()`) in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with default CLI `--view auto` option.
+- [x] **Down-The-Line Handedness Detection Correction**
+  - **Issue**: Standard DTL video coordinate space is inverted compared to Face-On (FO).
+  - **Accomplishment**: Updated `detect_handedness()` in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py) to inspect camera view perspective and correctly evaluate $x$-coordinate orientation for DTL swings.
 
 
 ### ☁️ Cloud Infrastructure & Integration Testing

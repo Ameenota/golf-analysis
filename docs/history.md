@@ -94,3 +94,7 @@
 - Confirmed Experiment E (108 features) as the ultimate winning production model (**2.66 frames MAE**, **+34.52% overall MAE reduction** over baseline) beating feature subsets F (3.06 MAE) and G (5.75 MAE).
 - Updated `docs/experiments.md` with EXP-002 detailed logs and ran `scratch/verify_pipeline.py` batch test achieving **2.41 frames overall pipeline MAE** (100% video pass rate).
 - Added `pytest` dev dependency group to `pyproject.toml` and updated `uv.lock` for automated testing pipeline.
+- Created `scripts/curate_benchmark_dataset.py` assembling 16 curated GolfDB pro videos and 7 user test videos into `data/benchmark/` with `manifest.json`.
+- Implemented 98.1% accurate hybrid 2D/3D camera view auto-detection (`detect_camera_view()`) in `analyze_swing.py`, setting `--view auto` as the default CLI parameter.
+- Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
+- Created `scratch/test_benchmark_suite.py` and evaluated full end-to-end milestone extraction and view auto-detection, achieving **100.0% accuracy (23/23 PASS)** across all pro and user benchmark videos.

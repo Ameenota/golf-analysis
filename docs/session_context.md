@@ -48,28 +48,16 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Confirmed Experiment E superiority over feature subset combinations: Exp F (Upper-body vels + Summaries [90 features]) achieved 3.06 frames MAE (losing to E due to missing lower-body posture signals), while Exp G (Wrist vels + Summaries [78 features]) regressed to 5.75 frames MAE.
 - Promoted Experiment E weights to `models/lstm_phase_model.keras` and saved winning schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
 - Integrated dynamic kinematic feature extraction into `analyze_swing.py` for single-video CLI inference.
-- Logged full experiment details, per-milestone metrics, and promotion decisions in [docs/experiments.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/experiments.md).
-- Executed batch verification test `scratch/verify_pipeline.py` achieving an overall pipeline MAE of **2.41 frames** across 10 test videos (100% pass rate).
-
-
----
-
-## Technical Details Reference
-
-### Coordinate Prefixes in Output DataFrames
-- `raw_`: Raw pixel coordinates directly from MediaPipe.
-- `smooth_`: Coordinates after Savitzky-Golay smoothing (`window_length=11`, `polyorder=3`).
-- `norm_`: Coordinates centered relative to `mid_hip` and scaled by `torso_scale`.
+- Created benchmark dataset script `scripts/curate_benchmark_dataset.py` assembling 16 curated GolfDB pro videos and 7 user test videos into `data/benchmark/` with `manifest.json`.
+- Implemented 98.1% accurate hybrid 2D/3D camera view auto-detection (`detect_camera_view()`) in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) making `--view auto` the new default CLI parameter.
+- Corrected Down-The-Line (DTL) handedness detection geometry in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py), eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
+- Successfully verified end-to-end pipeline execution on DTL test swing (`IMG_6826.MOV`), correctly auto-detecting `DOWN-THE-LINE` view, `right` handedness, measuring 170.97° lead arm flex (passing), and matching with DTL pro Sandra Gal.
 
 ---
 
 ## Action Plan for Next Session
 
-1. **Integration Test Suite Setup**:
-   - Write pytest unit tests using the Golden Coordinates (Option A) to verify the logic pipeline (XGBoost validation, Keras LSTM predictions, DP alignment, coaching metrics, and pro matchmaking).
-   - Add temporary local videos to verify OpenCV decoding and MediaPipe landmarks extraction.
+1. **Integration Test Suite Setup (`pytest`)**:
+   - Write unit and integration tests using Golden Coordinates and benchmark dataset to verify the pipeline components (XGBoost validation, Kinematic sequence generation, BiLSTM phase localization, DP alignment, coaching metrics, and pro matchmaking).
 2. **Firebase Storage Asset Downloader**:
-   - Determine optimal ffmpeg compression parameters to keep test videos under 200 KB.
-   - Collect both golf and non-golf test videos.
-   - Setup a Firebase Storage bucket to host custom ML models and media assets.
-   - Develop `src/utils/downloader.py` to automatically fetch and cache missing models and media on demand.
+   - Develop `src/utils/downloader.py` and set up asset caching for ML models and benchmark videos.
