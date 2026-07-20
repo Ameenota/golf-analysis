@@ -53,15 +53,25 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
 - Corrected Down-The-Line (DTL) handedness detection geometry in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py), eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
 - Successfully verified end-to-end pipeline execution on DTL test swing (`IMG_6826.MOV`), correctly auto-detecting `DOWN-THE-LINE` view, `right` handedness, measuring 170.97° lead arm flex (passing), and matching with DTL pro Sandra Gal.
 - Fixed pro video feature extraction in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) to dynamically extract kinematic features (Experiment E, 108 features) and corrected pro heuristic milestone references.
-- Executed the end-to-end analysis pipeline across all 7 user videos in `data/r-videos/` (including `.MOV` and `.mp4` files), achieving a **100% gatekeeper pass rate**, generating structured Markdown coaching reports, and compiling synchronized side-by-side dashboard videos into `output/`.
-- Implemented foot weight transfer & heel lift biomechanical rules (Rule F) in [coaching_engine.py](file:///Users/sagar/Documents/ML/golf-analysis/src/coaching_engine.py), measuring `trail_heel_lift_ratio` (detecting hanging back) and `lead_heel_lift_ratio` (detecting lead foot instability) at Finish. Integrated into markdown reports and side-by-side video scorecards, and verified on `kin-1.mp4` (triggering 12.5% lead heel lift warning).
-- Logged Landmark Swap & Leg Crossing Detection (Finish Inversion Handling) as a future low-priority task in [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md).
+- Executed end-to-end analysis pipeline across user videos in `data/r-videos/`, verifying 100% gatekeeper pass rate and compiling synchronized dashboard videos into `output/`.
+- Implemented foot weight transfer & heel lift biomechanical rules in `src/coaching_engine.py`.
+- Logged DTL Handedness Misclassification Bug (e.g. `IMG_1103.mov`) into `docs/backlog.md`.
+- Built Hugging Face asset management system:
+  - Created [scripts/upload_assets_to_hf.py](file:///Users/sagar/Documents/ML/golf-analysis/scripts/upload_assets_to_hf.py) to push ML models (`sagsan/golf-swing-analyzer-models`) and pro/sample dataset assets (`sagsan/golf-swing-analyzer-dataset`).
+  - Created [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) for universal local and cloud auto-downloading of models and pro benchmark assets into `.cache/`.
+  - Packaged 3 pre-computed demo presets (`IMG_0018.MOV`, `IMG_6826.MOV`, `kin-1.mp4`) into `data/sample_presets/` with `scripts/prepare_sample_presets.py`.
+- Built segregated Streamlit dashboard application in `streamlit_app/`:
+  - Configured [.streamlit/config.toml](file:///Users/sagar/Documents/ML/golf-analysis/.streamlit/config.toml) with 50MB client upload size limit and dark theme styling.
+  - Created [streamlit_app/charts.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/charts.py) for interactive Plotly spine tilt trajectory and joint velocity visualization.
+  - Created [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) featuring 3 preset demo selectors with simulated ~2.5s progress status animation, 50MB size validation, fast XGBoost non-golf gatekeeper rejection, and a 3-tab interactive dashboard (Tab 1: Synced Video & Scorecard Badges, Tab 2: Personal Coaching & Practice Drills with download buttons, Tab 3: Interactive Plotly Kinematic Charts).
 
 ---
 
 ## Action Plan for Next Session
 
-1. **Integration Test Suite Setup (`pytest`)**:
-   - Write unit and integration tests using Golden Coordinates and benchmark dataset to verify the pipeline components (XGBoost validation, Kinematic sequence generation, BiLSTM phase localization, DP alignment, coaching metrics, and pro matchmaking).
-2. **Firebase Storage Asset Downloader**:
-   - Develop `src/utils/downloader.py` and set up asset caching for ML models and benchmark videos.
+1. **Launch Streamlit App Locally**:
+   - Run `uv run streamlit run streamlit_app/app.py` to test and preview the dashboard in browser.
+2. **Deploy to Hugging Face Spaces**:
+   - Create a Hugging Face Space (Streamlit SDK, Free CPU tier with 16GB RAM) and deploy `streamlit_app/app.py`.
+3. **DTL Handedness Orientation Bugfix**:
+   - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).

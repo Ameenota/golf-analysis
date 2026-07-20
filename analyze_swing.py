@@ -359,373 +359,165 @@ def main():
     args = parser.parse_args()
     save_json_path = args.save_json
 
-    # Resolve AUTO name for save-video
-    save_video_path = args.save_video
-    if save_video_path == "AUTO":
-        base, ext = os.path.splitext(args.video_path)
-        save_video_path = f"{base}_processed.mp4"
-
-
+def run_analysis(video_path, view_mode="auto", handedness="auto", gatekeeper_threshold=0.60, speed=0.5, max_duration=60.0, output_video_path=None, save_json_path=None, save_report_path=None):
+    """
+    Programmatic entrypoint to analyze a golf swing video for Streamlit / API wrappers.
+    """
+    class DummyArgs:
+        pass
+    args = DummyArgs()
+    args.video_path = video_path
+    args.view = view_mode
+    args.handedness = handedness
+    args.gatekeeper_threshold = gatekeeper_threshold
+    args.speed = speed
+    args.max_duration = max_duration
+    args.output = output_video_path
+    args.save_json = save_json_path
+    args.save_video = output_video_path or "AUTO"
+    args.save_report = save_report_path
+    args.plot = None
     
-    if not os.path.exists(args.video_path):
-        output = {
-            "success": False,
-            "validated": False,
-            "gatekeeper_score": 0.0,
-            "error": f"Video file not found: {args.video_path}",
-            "milestones": None
-        }
-        write_and_print_output(output, save_json_path)
-        return
-        
-    # 1b. Check video duration before processing (early exit)
-    try:
-        detector = GolfSwingDetector()
-        is_duration_valid, duration = detector.check_duration(args.video_path, max_duration=args.max_duration)
-        if not is_duration_valid:
-            output = {
-                "success": False,
-                "validated": False,
-                "gatekeeper_score": 0.0,
-                "error": f"Video duration ({duration:.2f} seconds) exceeds the maximum allowed limit of {args.max_duration:.2f} seconds.",
-                "milestones": None
-            }
-            write_and_print_output(output, save_json_path)
-            return
-    except Exception as e:
-        output = {
-            "success": False,
-            "validated": False,
-            "gatekeeper_score": 0.0,
-            "error": f"Failed during duration validation check: {str(e)}",
-            "milestones": None
-        }
-        write_and_print_output(output, save_json_path)
-        return
+    save_json_path = save_json_path or os.path.join(PROJECT_ROOT, "output", f"{Path(video_path).stem}_results.json")
+    save_video_path = output_video_path or os.path.join(PROJECT_ROOT, "output", f"{Path(video_path).stem}_dashboard.mp4")
+    save_report_path = save_report_path or os.path.join(PROJECT_ROOT, "output", f"{Path(video_path).stem}_report.md")
+    
+    os.makedirs(os.path.dirname(save_json_path), exist_ok=True)
+    os.makedirs(os.path.dirname(save_video_path), exist_ok=True)
+    
+    detector = GolfSwingDetector()
+    is_duration_valid, duration = detector.check_duration(video_path, max_duration=max_duration)
+    if not is_duration_valid:
+        return {"success": False, "validated": False, "gatekeeper_score": 0.0, "error": f"Video duration ({duration:.2f}s) exceeds max limit of {max_duration}s."}
 
     try:
-        # 2. Run MediaPipe Landmark Extraction & Smoothing
         processor = GolfVideoProcessor()
-        df = processor.process_video(args.video_path)
-        
-        width = int(df["width"].iloc[0])
-        height = int(df["height"].iloc[0])
+        df = processor.process_video(video_path)
         fps = float(df["fps"].iloc[0])
-        N = len(df)
         
-        # 3. XGBoost Binary Gatekeeper Validation
-        # (Feature engineering and prediction is encapsulated inside detector)
         is_valid, avg_gate_prob, probs_gate, df_features = detector.validate(
-            df, fps, threshold=args.gatekeeper_threshold, use_rolling=True
+            df, fps, threshold=gatekeeper_threshold, use_rolling=True
         )
-        
-        # Check validation threshold
         if not is_valid:
-            output = {
-                "success": False,
-                "validated": False,
-                "gatekeeper_score": round(avg_gate_prob, 4),
-                "error": f"Video failed golf swing validation. Gatekeeper score of {avg_gate_prob:.4f} is below the threshold of {args.gatekeeper_threshold:.4f}.",
-                "milestones": None
-            }
-            write_and_print_output(output, save_json_path)
-            return
-            
-        # 5. Keras LSTM Milestone Inference
-        model_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
-        lstm_model_path = os.path.join(model_dir, "lstm_phase_model.keras")
-        if not os.path.exists(lstm_model_path):
-            raise FileNotFoundError(f"Keras LSTM model not found at {lstm_model_path}")
-            
-        lstm_model = tf.keras.models.load_model(lstm_model_path, compile=False)
+            return {"success": True, "validated": False, "gatekeeper_score": round(avg_gate_prob, 4), "error": "Video failed golf swing validation."}
+
+        model_path = os.path.join(PROJECT_ROOT, "models", "lstm_phase_model.keras")
+        model = tf.keras.models.load_model(model_path)
         
-        schema_path = os.path.join(model_dir, "kinematic_schema.json")
-        config_path = os.path.join(model_dir, "kinematic_config.json")
-        if os.path.exists(schema_path):
-            from src.kinematic_features import add_velocity_features, get_milestone_feature_columns, load_kinematic_config
-            kin_schema = load_kinematic_config(schema_path)
-            kin_config = load_kinematic_config(config_path) if os.path.exists(config_path) else None
-            feature_group = kin_schema.get("feature_group", "E")
-            
-            df_kin, _ = add_velocity_features(df_features, fps=fps, config=kin_config)
-            feature_cols = get_milestone_feature_columns(df_kin, feature_group=feature_group)
-            x_seq = df_kin[feature_cols].values.astype(np.float32)
-        else:
-            feature_cols = sorted([c for c in df_features.columns if c.startswith("norm_")])
-            base_features = sorted([c for c in feature_cols if not (c.endswith("t-5") or c.endswith("t+5"))])
-            if len(base_features) != 66:
-                raise ValueError(f"Base landmark feature extraction yielded {len(base_features)} features. Expected exactly 66.")
-            x_seq = df_features[base_features].values.astype(np.float32)
+        from src.kinematic_features import build_kinematic_features
+        feat_cols, X_seq = build_kinematic_features(df, fps)
+        probs_multi = model.predict(np.expand_dims(X_seq, axis=0), verbose=0)[0]
         
-        # Pass (1, N, num_features) directly to the masked LSTM model
-        x_batch = np.expand_dims(x_seq, axis=0)
+        raw_peak_frames = [int(np.argmax(probs_multi[:, c])) for c in range(1, 9)]
+        milestone_frames = compute_monotonic_alignment(probs_multi[:, 1:9])
         
-        # Run prediction
-        logits = lstm_model(x_batch, training=False)
-        probs_lstm = tf.nn.softmax(logits, axis=-1)
-        v_probs = tf.squeeze(probs_lstm, axis=0).numpy() # (N, 9)
-        
-        # 6. DP Monotonic Chronological Alignment
-        milestone_frames = compute_monotonic_alignment(v_probs)
-        
-        # Prepare milestone results and check DP adjustments
         milestones_output = {}
         for idx, name in enumerate(MILESTONE_NAMES):
-            c = idx + 1
             pred_frame = milestone_frames[idx]
-            raw_peak_frame = int(np.argmax(v_probs[:, c]))
-            dp_corrected = (pred_frame != raw_peak_frame)
-            shift_dist = pred_frame - raw_peak_frame
-            
+            raw_peak = raw_peak_frames[idx]
             milestones_output[name] = {
                 "frame": int(pred_frame),
                 "timestamp": round(float(pred_frame) / fps, 4),
-                "raw_peak_frame": raw_peak_frame,
-                "dp_corrected": bool(dp_corrected),
-                "shift_distance": int(shift_dist),
-                "heuristic_corrected": False
+                "raw_peak_frame": raw_peak,
+                "dp_corrected": bool(pred_frame != raw_peak),
+                "shift_distance": int(pred_frame - raw_peak)
             }
             
-        # 6b. Apply Physical Heuristic Adjustments
-        try:
-            # 1. Adjust Impact to lowest hand height between Top of Backswing & Impact
-            top_frame = milestones_output["Top of Backswing"]["frame"]
-            impact_frame = milestones_output["Impact"]["frame"]
-            
-            if impact_frame - top_frame > 1:
-                start_search = top_frame + 1
-                end_search = impact_frame - 1
-                
-                downswing_segment = df.iloc[start_search:end_search+1]
-                wrist_y = (downswing_segment["smooth_left_wrist_y"] + downswing_segment["smooth_right_wrist_y"]) / 2.0
-                lowest_hand_frame = int(wrist_y.idxmax())
-                
-                old_impact = milestones_output["Impact"]["frame"]
-                if old_impact != lowest_hand_frame:
-                    milestones_output["Impact"]["frame"] = lowest_hand_frame
-                    milestones_output["Impact"]["timestamp"] = round(float(lowest_hand_frame) / fps, 4)
-                    milestones_output["Impact"]["heuristic_corrected"] = True
-                    milestones_output["Impact"]["shift_distance"] = lowest_hand_frame - milestones_output["Impact"]["raw_peak_frame"]
-            
-            # 2. Adjust Top of Backswing to highest hand height between Address & Top of Backswing
-            address_frame = milestones_output["Address"]["frame"]
-            top_frame = milestones_output["Top of Backswing"]["frame"]
-            
-            if top_frame - address_frame > 1:
-                start_search = address_frame + 1
-                end_search = top_frame - 1
-                
-                backswing_segment = df.iloc[start_search:end_search+1]
-                wrist_y = (backswing_segment["smooth_left_wrist_y"] + backswing_segment["smooth_right_wrist_y"]) / 2.0
-                highest_hand_frame = int(wrist_y.idxmin())
-                
-                old_top = milestones_output["Top of Backswing"]["frame"]
-                if old_top != highest_hand_frame:
-                    milestones_output["Top of Backswing"]["frame"] = highest_hand_frame
-                    milestones_output["Top of Backswing"]["timestamp"] = round(float(highest_hand_frame) / fps, 4)
-                    milestones_output["Top of Backswing"]["heuristic_corrected"] = True
-                    milestones_output["Top of Backswing"]["shift_distance"] = highest_hand_frame - milestones_output["Top of Backswing"]["raw_peak_frame"]
-                    
-            # Sync back milestone_frames list for correct plotting
-            milestone_frames = [milestones_output[m_name]["frame"] for m_name in MILESTONE_NAMES]
-        except Exception as he:
-            pass
-            
-        # Resolve camera view (auto vs manual override)
-        if args.view == "auto":
-            addr_frame = milestones_output.get("Address", {}).get("frame", 0)
-            effective_view = detect_camera_view(df, address_frame=addr_frame)
-            print(f"Auto-detected camera view: {effective_view.upper()}")
-        else:
-            effective_view = args.view
+        addr_frame = milestones_output.get("Address", {}).get("frame", 0)
+        effective_view = detect_camera_view(df, address_frame=addr_frame) if view_mode == "auto" else view_mode
 
-        # 7. Run Biomechanical Analysis and Pro Matchmaker
         bio_results = analyze_swing_biomechanics(
-            df=df,
-            milestones=milestones_output,
-            view=effective_view,
-            handedness=args.handedness
+            df=df, milestones=milestones_output, view=effective_view, handedness=handedness
         )
         
         output = {
             "success": True,
             "validated": True,
             "gatekeeper_score": round(avg_gate_prob, 4),
-            "milestones": milestones_output
+            "milestones": milestones_output,
+            "view": effective_view,
+            "handedness": bio_results.get("handedness", "right"),
+            "user_arm_to_torso_ratio": bio_results.get("user_arm_to_torso_ratio", 1.0),
+            "matched_pro": bio_results.get("matched_pro", "N/A"),
+            "matched_pro_ratio": bio_results.get("matched_pro_ratio", 1.0),
+            "matched_pro_video_id": bio_results.get("matched_pro_video_id", 0),
+            "matched_pro_metrics": bio_results.get("matched_pro_metrics", {}),
+            "biomechanical_metrics": bio_results.get("metrics", {}),
+            "issues_detected": bio_results.get("issues_detected", [])
         }
         
         if bio_results.get("success", False):
-            output.update({
-                "view": effective_view,
-                "handedness": bio_results["handedness"],
-                "user_arm_to_torso_ratio": bio_results["user_arm_to_torso_ratio"],
-                "matched_pro": bio_results["matched_pro"],
-                "matched_pro_ratio": bio_results["matched_pro_ratio"],
-                "matched_pro_video_id": bio_results["matched_pro_video_id"],
-                "matched_pro_metrics": bio_results["matched_pro_metrics"],
-                "biomechanical_metrics": bio_results["metrics"],
-                "issues_detected": bio_results["issues_detected"]
-            })
+            generate_markdown_report(output, save_report_path, effective_view)
             
-            # Save Markdown coaching report if requested
-            if args.save_report:
-                generate_markdown_report(output, args.save_report, effective_view)
-        else:
-            output["biomechanical_error"] = bio_results.get("error", "Unknown biomechanical error")
-            
-        write_and_print_output(output, save_json_path)
+        with open(save_json_path, "w") as jf:
+            json.dump(output, jf, indent=2)
 
-        
-        # 8. Save diagnostic probabilities plot if requested
-        if args.plot:
-            sns.set_theme(style="whitegrid")
-            plt.figure(figsize=(14, 6))
-            
-            # Plot probability curves for classes 1-8
-            for c in range(1, 9):
-                plt.plot(v_probs[:, c], label=MILESTONE_NAMES[c-1], linewidth=2)
+        # Synchronized visual stitcher
+        pro_manifest_path = os.path.join(PROJECT_ROOT, "data", "benchmark", "manifest.json")
+        if bio_results.get("success", False) and os.path.exists(pro_manifest_path):
+            with open(pro_manifest_path, "r") as pf:
+                p_manifest = json.load(pf)
+            pro_match = next((pv for pv in p_manifest.get("pro_videos", []) if pv["id"] == bio_results["matched_pro_video_id"]), None)
+            if pro_match:
+                pro_video_path = os.path.join(PROJECT_ROOT, pro_match["path"])
+                df_pro = processor.process_video(pro_video_path)
+                feat_cols_p, X_seq_p = build_kinematic_features(df_pro, df_pro["fps"].iloc[0])
+                probs_multi_pro = model.predict(np.expand_dims(X_seq_p, axis=0), verbose=0)[0]
+                m_frames_pro = compute_monotonic_alignment(probs_multi_pro[:, 1:9])
+                m_pro_out = {name: {"frame": int(m_frames_pro[idx])} for idx, name in enumerate(MILESTONE_NAMES)}
                 
-            # Draw vertical markers at DP chosen frames
-            colors = sns.color_palette("husl", 8)
-            for idx, frame in enumerate(milestone_frames):
-                plt.axvline(x=frame, color=colors[idx], linestyle="--", alpha=0.7, 
-                            label=f"DP {MILESTONE_NAMES[idx]}: F{frame}")
-                
-            plt.title("Milestone Probabilities and Chronological DP Alignment", fontsize=14, fontweight="bold")
-            plt.xlabel("Frame Index", fontsize=12)
-            plt.ylabel("Probability", fontsize=12)
-            plt.xlim(0, N - 1)
-            plt.ylim(-0.05, 1.05)
-            plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", borderaxespad=0.)
-            plt.tight_layout()
-            
-            os.makedirs(os.path.dirname(os.path.abspath(args.plot)), exist_ok=True)
-            plt.savefig(args.plot, dpi=150)
-            plt.close()
-            
-        # 9. Save         # 9. Save annotated skeleton overlay video if requested
-        if save_video_path:
-            parent_dir = os.path.dirname(os.path.abspath(save_video_path))
-            if parent_dir:
-                os.makedirs(parent_dir, exist_ok=True)
-                
-            # If we successfully ran coaching analysis and matched a pro, run the stitcher!
-            if bio_results.get("success", False):
-                pro_video_id = bio_results["matched_pro_video_id"]
-                project_root = os.path.dirname(os.path.abspath(__file__))
-                pro_video_path = os.path.join(project_root, "data/videos_160/videos_160", f"{pro_video_id}.mp4")
-                
-                if not os.path.exists(pro_video_path):
-                    raise FileNotFoundError(f"Matched professional swing video not found at: {pro_video_path}")
-                
-                print(f"Matched professional: {bio_results['matched_pro']} (ID: {pro_video_id})")
-                print("Running landmark extraction and pipeline on pro video...")
-                
-                # Run landmarks on pro video using a fresh processor instance to reset MediaPipe timestamps
-                pro_processor = GolfVideoProcessor()
-                df_pro = pro_processor.process_video(pro_video_path)
-                pro_processor.close()
-                df_features_pro = engineer_sliding_window(df_pro, joints=HIGH_MOVEMENT_JOINTS)
-                
-                # LSTM sequence mapping on pro
-                fps_pro = float(df_pro["fps"].iloc[0])
-                if os.path.exists(schema_path):
-                    df_kin_pro, _ = add_velocity_features(df_features_pro, fps=fps_pro, config=kin_config)
-                    x_seq_pro = df_kin_pro[feature_cols].values.astype(np.float32)
-                else:
-                    x_seq_pro = df_features_pro[feature_cols].values.astype(np.float32)
-                
-                N_pro = len(df_pro)
-                x_batch_pro = np.expand_dims(x_seq_pro, axis=0)
-                
-                logits_pro = lstm_model(x_batch_pro, training=False)
-                probs_lstm_pro = tf.nn.softmax(logits_pro, axis=-1)
-                probs_lstm_pro = tf.squeeze(probs_lstm_pro, axis=0).numpy()
-                v_probs_pro = probs_lstm_pro[:N_pro, :]
-                
-                # DP alignment for pro
-                milestone_frames_pro = compute_monotonic_alignment(v_probs_pro)
-                
-                milestones_output_pro = {}
-                for idx, name in enumerate(MILESTONE_NAMES):
-                    c = idx + 1
-                    pred_frame_pro = milestone_frames_pro[idx]
-                    raw_peak_pro = int(np.argmax(v_probs_pro[:, c]))
-                    
-                    milestones_output_pro[name] = {
-                        "frame": int(pred_frame_pro),
-                        "raw_peak_frame": raw_peak_pro
-                    }
-                    
-                # Apply heuristics to pro
-                try:
-                    top_p = milestones_output_pro["Top of Backswing"]["frame"]
-                    imp_p = milestones_output_pro["Impact"]["frame"]
-                    if imp_p - top_p > 1:
-                        wrist_y_p = (df_pro.iloc[top_p+1:imp_p-1]["smooth_left_wrist_y"] + df_pro.iloc[top_p+1:imp_p-1]["smooth_right_wrist_y"]) / 2.0
-                        milestones_output_pro["Impact"]["frame"] = int(wrist_y_p.idxmax())
-                        
-                    addr_p = milestones_output_pro["Address"]["frame"]
-                    top_p = milestones_output_pro["Top of Backswing"]["frame"]
-                    if top_p - addr_p > 1:
-                        wrist_y_p = (df_pro.iloc[addr_p+1:top_p-1]["smooth_left_wrist_y"] + df_pro.iloc[addr_p+1:top_p-1]["smooth_right_wrist_y"]) / 2.0
-                        milestones_output_pro["Top of Backswing"]["frame"] = int(wrist_y_p.idxmin())
-                except Exception:
-                    pass
-                
-                # Call synchronized visual stitcher
                 create_synchronized_dashboard(
-                    user_video_path=args.video_path,
+                    user_video_path=video_path,
                     pro_video_path=pro_video_path,
                     df_user=df,
                     df_pro=df_pro,
                     milestones_user=milestones_output,
-                    milestones_pro=milestones_output_pro,
+                    milestones_pro=m_pro_out,
                     bio_results=bio_results,
                     output_path=save_video_path,
-                    speed=args.speed
+                    speed=speed
                 )
-            else:
-                # Simple fallback to user-only rendering if pro matching failed
-                print("Pro matching failed. Rendering user skeleton video only.")
-                cap = cv2.VideoCapture(args.video_path)
-                first_milestone = "Address"
-                last_milestone = "Finish"
-                if output.get("success", False) and milestones_output and first_milestone in milestones_output and last_milestone in milestones_output:
-                    start_frame = max(0, milestones_output[first_milestone]["frame"] - 5)
-                    end_frame = min(N - 1, milestones_output[last_milestone]["frame"] + 5)
-                else:
-                    start_frame = 0
-                    end_frame = N - 1
-                    
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-                out_fps = fps * args.speed
-                out_writer = cv2.VideoWriter(save_video_path, fourcc, out_fps, (width, height))
-                
-                if start_frame > 0:
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
-                frame_idx = start_frame
-                
-                while frame_idx <= end_frame:
-                    ret, frame = cap.read()
-                    if not ret: break
-                    draw_skeleton(frame, df.iloc[frame_idx], prefix="smooth_")
-                    out_writer.write(frame)
-                    frame_idx += 1
-                    
-                cap.release()
-                out_writer.release()
-            
+        return output
     except Exception as e:
-        output = {
-            "success": False,
-            "validated": False,
-            "gatekeeper_score": 0.0,
-            "error": f"An error occurred during analysis: {str(e)}",
-            "milestones": None
-        }
-        write_and_print_output(output, save_json_path)
-        return
+        return {"success": False, "validated": False, "gatekeeper_score": 0.0, "error": str(e)}
+
+def main():
+    parser = argparse.ArgumentParser(description="End-to-End Golf Swing Analyzer Inference CLI")
+    parser.add_argument("video_path", type=str, help="Path to raw golf swing video file")
+    parser.add_argument("--gatekeeper-threshold", type=float, default=0.60,
+                        help="Confidence threshold for golf swing validation (default: 0.60)")
+    parser.add_argument("--save-video", type=str, nargs="?", const="AUTO", default="",
+                        help="Path to save annotated skeleton overlay video (.mp4).")
+    parser.add_argument("--save-json", type=str, default="", help="Path to save output JSON results")
+    parser.add_argument("--save-report", type=str, default="", help="Path to save Markdown coaching report (.md)")
+    parser.add_argument("--view", type=str, choices=["auto", "face-on", "down-the-line"], default="auto",
+                        help="Camera view perspective (default: auto)")
+    parser.add_argument("--handedness", type=str, choices=["auto", "right", "left"], default="auto",
+                        help="Golfer handedness (default: auto)")
+    parser.add_argument("--max-duration", type=float, default=60.0,
+                        help="Maximum allowed video duration in seconds (default: 60.0)")
+    parser.add_argument("--speed", type=float, default=0.5,
+                        help="Speed factor for the output video playback (default: 0.5)")
+    
+    args = parser.parse_args()
+    
+    output_video = args.save_video
+    if output_video == "AUTO":
+        base, _ = os.path.splitext(args.video_path)
+        output_video = f"{base}_processed.mp4"
+        
+    out = run_analysis(
+        video_path=args.video_path,
+        view_mode=args.view,
+        handedness=args.handedness,
+        gatekeeper_threshold=args.gatekeeper_threshold,
+        speed=args.speed,
+        max_duration=args.max_duration,
+        output_video_path=output_video if output_video else None,
+        save_json_path=args.save_json if args.save_json else None,
+        save_report_path=args.save_report if args.save_report else None
+    )
+    print(f"\nAnalysis completed! Validated: {out.get('validated', False)}")
 
 if __name__ == "__main__":
     main()

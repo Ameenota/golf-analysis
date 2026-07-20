@@ -52,6 +52,9 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
     - Chronological consistency ($T_1 < T_2 < \dots < T_8$).
     - Relative frame range boundary checks.
     - Physical downswing duration validation (must be between 6 and 12 frames at 30 FPS).
+- [ ] **Fix Down-The-Line (DTL) Handedness Detection Bug**
+  - **Issue**: Videos like `IMG_1103.mov` are right-handed DTL swings but `detect_handedness()` in `src/coaching_engine.py` evaluates them as `left`-handed due to DTL perspective shoulder/hip X-coordinate inversion.
+  - **Action**: Refine 3D Z-depth shoulder orientation heuristic or add explicit golfer body facing direction check for DTL perspective.
 - [x] **Auto View Detection (DTL vs. FO)**
   - **Idea**: Dynamically detect if an incoming video is Down-The-Line or Face-On.
   - **Accomplishment**: Implemented 98.1% accurate hybrid 2D/3D heuristic (`detect_camera_view()`) in [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) with default CLI `--view auto` option.

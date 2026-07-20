@@ -1,10 +1,10 @@
 # Project History Log
 
-- Logged Landmark Swap & Leg Crossing Detection (Finish Inversion Handling) to [docs/backlog.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/backlog.md) under future low-priority tasks.
-- Implemented foot weight transfer and heel lift biomechanical rules in `src/coaching_engine.py` to evaluate trail heel lift (detecting hanging back) and lead heel lift (detecting lead foot instability) at Finish.
-- Integrated foot metrics into `analyze_swing.py` markdown coaching report generator and `src/visual_stitcher.py` side-by-side synchronized video scorecard renderer.
-- Re-processed all 7 user videos in `data/r-videos/`, successfully detecting lead heel lift warning on `kin-1.mp4` (12.5% of torso) and generating updated reports and dashboard videos.
-- Fixed pro video feature extraction in `analyze_swing.py` to dynamically extract kinematic features (Experiment E, 108 features) and corrected pro heuristic milestone references.
+- Built a segregated Streamlit web dashboard in `streamlit_app/` featuring preset demo selectors, 50MB file size validation, fast XGBoost non-golf gatekeeper rejection, and a 3-tab interactive dashboard (Tab 1: Synced Video & Scorecard, Tab 2: Coaching Report & Drills, Tab 3: Interactive Plotly Kinematic Charts).
+- Developed `scripts/upload_assets_to_hf.py` and `src/utils/hf_downloader.py` using `huggingface_hub` for automated uploading and universal local/cloud auto-downloading of ML models (`sagsan/golf-swing-analyzer-models`) and dataset assets (`sagsan/golf-swing-analyzer-dataset`).
+- Packaged 3 pre-computed demo presets (`IMG_0018.MOV`, `IMG_6826.MOV`, `kin-1.mp4`) into `data/sample_presets/` using `scripts/prepare_sample_presets.py`.
+- Refactored `analyze_swing.py` to expose a modular `run_analysis()` function export for Streamlit and programmatic API calls.
+- Logged DTL Handedness Misclassification Bug (e.g. `IMG_1103.mov`) into `docs/backlog.md`.
 
 - Added custom agent configuration and environment rules under `.agents/` including `environment.md` (requiring `uv` for python environments) and `ledger.md` (requiring `HISTORY.md` updates before commits).
 - Verified initial workspace structure and GolfDB inputs.
