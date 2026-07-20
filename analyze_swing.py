@@ -2,6 +2,14 @@ import os
 import argparse
 import json
 import numpy as np
+
+# Set local directory overrides for sandbox environment
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+os.environ["KERAS_HOME"] = os.path.join(PROJECT_ROOT, ".keras_home")
+os.environ["MPLCONFIGDIR"] = os.path.join(PROJECT_ROOT, ".mpl_config")
+os.makedirs(os.environ["KERAS_HOME"], exist_ok=True)
+os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
+
 import cv2
 import pandas as pd
 import tensorflow as tf
@@ -377,15 +385,26 @@ def main():
             
         lstm_model = tf.keras.models.load_model(lstm_model_path, compile=False)
         
-        feature_cols = sorted([c for c in df_features.columns if c.startswith("norm_")])
-        base_features = sorted([c for c in feature_cols if not (c.endswith("t-5") or c.endswith("t+5"))])
-        if len(base_features) != 66:
-            raise ValueError(f"Base landmark feature extraction yielded {len(base_features)} features. Expected exactly 66.")
+        schema_path = os.path.join(model_dir, "kinematic_schema.json")
+        config_path = os.path.join(model_dir, "kinematic_config.json")
+        if os.path.exists(schema_path):
+            from src.kinematic_features import add_velocity_features, get_milestone_feature_columns, load_kinematic_config
+            kin_schema = load_kinematic_config(schema_path)
+            kin_config = load_kinematic_config(config_path) if os.path.exists(config_path) else None
+            feature_group = kin_schema.get("feature_group", "E")
             
-        x_seq = df_features[base_features].values.astype(np.float32)
+            df_kin, _ = add_velocity_features(df_features, fps=fps, config=kin_config)
+            feature_cols = get_milestone_feature_columns(df_kin, feature_group=feature_group)
+            x_seq = df_kin[feature_cols].values.astype(np.float32)
+        else:
+            feature_cols = sorted([c for c in df_features.columns if c.startswith("norm_")])
+            base_features = sorted([c for c in feature_cols if not (c.endswith("t-5") or c.endswith("t+5"))])
+            if len(base_features) != 66:
+                raise ValueError(f"Base landmark feature extraction yielded {len(base_features)} features. Expected exactly 66.")
+            x_seq = df_features[base_features].values.astype(np.float32)
         
-        # Pass (1, N, 66) directly to the masked LSTM model
-        x_batch = np.expand_dims(x_seq, axis=0) # (1, N, 66)
+        # Pass (1, N, num_features) directly to the masked LSTM model
+        x_batch = np.expand_dims(x_seq, axis=0)
         
         # Run prediction
         logits = lstm_model(x_batch, training=False)

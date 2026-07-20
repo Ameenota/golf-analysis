@@ -106,6 +106,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
 - [x] **Biomechanical Coaching Rules Engine & Pro Matchmaker**
   - **Accomplishment**: Built a view-dependent biomechanical evaluation engine and integrated it into the inference pipeline. Added auto-handedness detection, a pro matchmaker against precalculated profiles, and automated Markdown coaching reports with comparison tables and drills.
 - [x] **Clipped Slow-Motion Swing Annotator & Video Scorecard**
+- [x] **Synthetic Kinematic Features Ablation Study & Model Promotion**
+  - **Accomplishment**: Created `src/kinematic_features.py` (centered velocity differences & motion energy metrics) and ran a 5-experiment ablation study (`scratch/train_kinematic_ablations.py`). Experiment E (108 features) achieved **2.61 frames MAE** (**14.13% improvement** over 3.04 baseline), passed all promotion criteria (7/8 milestones improved), and was promoted to `models/lstm_phase_model.keras`. Integrated into `analyze_swing.py`, achieving **2.45 frames overall MAE** on batch pipeline verification.
 - [x] **Decoupled Rolling Window Gatekeeper & Video Duration Validation**
   - **Accomplishment**: Decoupled the XGBoost binary validator from [analyze_swing.py](file:///Users/sagar/Documents/ML/golf-analysis/analyze_swing.py) into the modular class `GolfSwingDetector` in [detector.py](file:///Users/sagar/Documents/ML/golf-analysis/src/detector.py). Implemented 2.0-second rolling window validation (eliminating long-video dilution bug) and configured a 1-minute early duration gatekeeper check. Verified with a new 305-video comparative evaluation script achieving 97.4% overall accuracy and 98.4% recall.
 

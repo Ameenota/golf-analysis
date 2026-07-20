@@ -42,9 +42,12 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Updated `src/coaching_engine.py` to query correct aligned keys (Class 4 for Top metrics, Class 6 for Impact metrics, Class 7 for Follow-Through metrics).
   - Confirmed the fix by running `scratch/verify_pipeline.py` which evaluated with an overall MAE of **3.26 frames**, and regenerated all 7 holdout reports/videos.
 - Logged the view-dependent DTL handedness check task to `docs/backlog.md`.
-- Implemented `layers.Masking(mask_value=0.0)` with dynamic input shapes `(None, 66)` in `notebooks/lstm_keras.ipynb` and retrained `models/lstm_phase_model.keras`.
-- Refactored `analyze_swing.py` to stream single-video feature sequences `(1, N, 66)` directly into the LSTM model without 1,280 zero-padding.
-- Executed diagnostic tests confirming **100% mathematical padding invariance** (0.00000000 max probability diff) and ran `scratch/verify_pipeline.py`, dropping overall pipeline MAE from 3.26 frames to **2.71 frames**.
+- Implemented `src/kinematic_features.py` adding centered velocity differences and summary motion energy metrics across 12 key MediaPipe landmarks.
+- Developed and executed `scratch/train_kinematic_ablations.py`, evaluating 5 model configurations (A: Base 66 coords, B: Coords + Wrists [72], C: Coords + Upper Body [84], D: Coords + All MVP vels [102], E: Coords + MVP vels + Summaries [108]) across 140 held-out test videos.
+- Experiment E achieved **2.61 frames MAE** (a **14.13% improvement** over the 3.04 baseline) and passed all strict promotion criteria (7/8 milestones improved, Top MAE regression +0.15 frames, Impact MAE improvement -0.24 frames).
+- Promoted Experiment E weights to `models/lstm_phase_model.keras` and saved schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
+- Integrated dynamic kinematic feature extraction into `analyze_swing.py` for single-video CLI inference.
+- Executed `scratch/verify_pipeline.py` achieving an overall batch pipeline MAE of **2.45 frames** (100% video validation success rate).
 
 
 ---

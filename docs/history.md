@@ -84,3 +84,9 @@
 - Updated `analyze_swing.py` to pass single-video feature arrays `(1, N, 66)` directly into the LSTM without zero-padding to 1,280 frames.
 - Verified 100% mathematical padding invariance (0.00000000 max probability difference between unpadded vs 400 vs 1,280 frames) and improved overall batch evaluation MAE from 3.26 frames down to **2.71 frames**.
 - Marked the Bidirectional LSTM Masking & Padding Invariance task as completed in `docs/backlog.md`.
+- Implemented `src/kinematic_features.py` adding centered velocity differences and summary motion energy metrics across 12 key MediaPipe landmarks.
+- Created and executed `scratch/train_kinematic_ablations.py`, running a 5-experiment feature ablation study (A through E). Experiment E (108 features) achieved **2.61 frames MAE** (a **14.13% improvement** over the 3.04 baseline) and passed all strict promotion criteria (7/8 milestones improved).
+- Promoted Experiment E model weights to `models/lstm_phase_model.keras` and saved schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
+- Integrated dynamic kinematic feature extraction into `analyze_swing.py` and set sandbox permission environment overrides (`KERAS_HOME` and `MPLCONFIGDIR`).
+- Executed `scratch/verify_pipeline.py` batch test across 10 sample videos, achieving an overall pipeline MAE of **2.45 frames** (100% video validation success rate).
+
