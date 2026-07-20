@@ -111,4 +111,8 @@
 - Created `scripts/curate_benchmark_dataset.py` assembling 16 curated GolfDB pro videos and 7 user test videos into `data/benchmark/` with `manifest.json`.
 - Implemented 98.1% accurate hybrid 2D/3D camera view auto-detection (`detect_camera_view()`) in `analyze_swing.py`, setting `--view auto` as the default CLI parameter.
 - Updated `detect_handedness()` in `src/coaching_engine.py` to account for Down-The-Line coordinate space, eliminating false left-handed misclassifications and false bent lead arm warnings on DTL swings (e.g. `IMG_6826.MOV`).
-- Created `scratch/test_benchmark_suite.py` and evaluated full end-to-end milestone extraction and view auto-detection, achieving **100.0% accuracy (23/23 PASS)** across all pro and user benchmark videos.
+- Created Hugging Face Space repository [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
+- Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
+- Created and uploaded custom dark-mode landing page [index.html](file:///Users/sagar/Documents/ML/golf-analysis/index.html) to Hugging Face Static Space [sagsan/golf-swing-analyzer](https://huggingface.co/spaces/sagsan/golf-swing-analyzer).
+
+

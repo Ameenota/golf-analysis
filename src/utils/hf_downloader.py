@@ -4,8 +4,8 @@ from huggingface_hub import hf_hub_download, snapshot_download
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-DEFAULT_MODELS_REPO = os.environ.get("HF_MODELS_REPO", "Ameenota/golf-swing-analyzer-models")
-DEFAULT_DATASET_REPO = os.environ.get("HF_DATASET_REPO", "Ameenota/golf-swing-analyzer-dataset")
+DEFAULT_MODELS_REPO = os.environ.get("HF_MODELS_REPO", "sagsan/golf-swing-analyzer-models")
+DEFAULT_DATASET_REPO = os.environ.get("HF_DATASET_REPO", "sagsan/golf-swing-analyzer-dataset")
 
 def ensure_models_downloaded(repo_id: str = None):
     """Ensures ML model files exist locally in models/, downloading from HF Hub if missing."""

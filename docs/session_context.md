@@ -67,13 +67,18 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Restructured Tab 1 layout to place the 4-column Biomechanical Scorecard directly below the full-width side-by-side video clip.
   - Enhanced Tab 3 Plotly kinematic charts in [streamlit_app/charts.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/charts.py) with auto-zoomed $X$-axis around the active swing range (`[Address - 15, Finish + 20]`), staggered milestone vertical text annotations, and a **Matched Pro Trajectory Overlay (Dashed Gold Line `🟡 Matched Pro (Name)`)** compared against the **User Swing (Solid Green Line `🟢 User Swing`)** with interactive legend keys.
 
+- Deployed Streamlit Web Application to Hugging Face Spaces:
+  - Created Hugging Face Space repository `sagsan/golf-swing-analyzer`.
+  - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
+  - Created container build configs [requirements.txt](file:///Users/sagar/Documents/ML/golf-analysis/requirements.txt), [packages.txt](file:///Users/sagar/Documents/ML/golf-analysis/packages.txt), [README.md](file:///Users/sagar/Documents/ML/golf-analysis/README.md), and automation script [scripts/deploy_to_hf_space.py](file:///Users/sagar/Documents/ML/golf-analysis/scripts/deploy_to_hf_space.py).
+  - Executed automated upload of application code, dependencies, and Streamlit dashboard to Hugging Face Spaces.
+
 ---
 
 ## Action Plan for Next Session
 
-1. **Deploy Streamlit Application to Hugging Face Spaces**:
-   - Create Hugging Face Space repository `sagsan/golf-swing-analyzer` (Streamlit SDK, Free CPU tier with 16GB RAM).
-   - Add `requirements.txt` / `pyproject.toml` and verify HF Spaces deployment.
-   - Test end-to-end auto-downloading of models (`sagsan/golf-swing-analyzer-models`) and datasets (`sagsan/golf-swing-analyzer-dataset`).
-2. **DTL Handedness Orientation Bugfix**:
+1. **DTL Handedness Orientation Bugfix**:
    - Resolve the shoulder/hip X-coordinate inversion issue for Down-The-Line right-handed swings (`IMG_1103.mov`).
+2. **Golfer Centroid Tracking & Occlusion Handling**:
+   - Implement centroid lock-on to distinguish primary golfer from background bystanders.
+
