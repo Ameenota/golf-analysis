@@ -82,6 +82,7 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Changed Streamlit error handling so internal analysis failures display their actual error instead of being mislabeled as `Gatekeeper Score: 0.00`.
   - Preserved `.mov`/`.mp4` upload suffixes and made generated output paths extension-independent.
   - Verified focused end-to-end inference shapes on `kin-1`: `(92, 108)` input and `(1, 92, 9)` output; all 8 kinematic unit tests pass.
+- Added repository-wide, case-insensitive `.gitignore` rules for common video formats (`mp4`, `mov`, `avi`, `mkv`, `webm`, `m4v`, `mpeg`, `mpg`, `wmv`, and `flv`) and confirmed Git currently tracks no video files.
 
 ---
 

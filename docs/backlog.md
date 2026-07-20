@@ -24,6 +24,8 @@ This file tracks the project's prioritized backlog, including upcoming tasks, lo
   - **Goal**: Created `scripts/curate_benchmark_dataset.py` and output `data/benchmark/manifest.json`.
 
 ### 🧹 Technical Debt & Dependency Cleanup
+- [x] **Prevent video assets from being committed to Git**
+  - **Accomplishment**: Added repository-wide, case-insensitive ignore rules for common video formats and confirmed no video files are currently tracked.
 - [x] **Remove PyTorch and Fastai Dependencies**
   - **Idea**: Clean up the codebase to reduce dependency bloat and environment size.
   - **Action**: Deleted obsolete `.pt` PyTorch models from `models/` directory and verified no PyTorch dependencies are present in `pyproject.toml`.

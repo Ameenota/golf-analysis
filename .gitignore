@@ -17,3 +17,15 @@ scratch/
 .keras_home/
 .mpl_config/
 output/
+
+# Video assets belong in external storage, never Git
+*.[mM][pP]4
+*.[mM]4[vV]
+*.[mM][oO][vV]
+*.[aA][vV][iI]
+*.[mM][kK][vV]
+*.[wW][eE][bB][mM]
+*.[mM][pP][eE][gG]
+*.[mM][pP][gG]
+*.[wW][mM][vV]
+*.[fF][lL][vV]

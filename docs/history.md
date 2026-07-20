@@ -1,5 +1,6 @@
 # Project History Log
 
+- Added repository-wide, case-insensitive `.gitignore` rules for common video formats and verified that no video assets are currently tracked.
 - Fixed valid custom uploads being falsely reported as `Gatekeeper Score: 0.00`: load the BiLSTM for inference with `compile=False`, restore the schema-driven 108-feature kinematic builder, preserve upload extensions and output paths, retain computed gatekeeper scores on downstream failures, and distinguish analysis errors from genuine video rejection in Streamlit.
 - Added the generated Matplotlib `.mpl_config/` runtime cache directory to `.gitignore`.
 - Fixed uploaded-video analysis failing with `NameError: Path is not defined` by importing `pathlib.Path` in `analyze_swing.py` for default output-path construction.
@@ -122,4 +123,3 @@
 - Updated default Hugging Face model and dataset fallback repository paths in [src/utils/hf_downloader.py](file:///Users/sagar/Documents/ML/golf-analysis/src/utils/hf_downloader.py) to `sagsan/golf-swing-analyzer-models` and `sagsan/golf-swing-analyzer-dataset`.
 - Added `imageio` and `imageio-ffmpeg` dependencies and updated [src/visual_stitcher.py](file:///Users/sagar/Documents/ML/golf-analysis/src/visual_stitcher.py) to write native web-compatible H.264 `yuv420p` MP4 files (`libx264`/`avc1`). Re-encoded all sample preset videos and uploaded to Hugging Face Dataset Hub.
 - Replaced custom base64 HTML `<video>` embed in [streamlit_app/app.py](file:///Users/sagar/Documents/ML/golf-analysis/streamlit_app/app.py) with native `st.video(path, format="video/mp4", autoplay=True, loop=True)` to prevent memory exhaustion and base64 string truncation errors on Streamlit Cloud.
-
