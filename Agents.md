@@ -27,6 +27,9 @@ Before starting a task, consult the files in `docs/` depending on your current n
 * **[docs/roadmap.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/roadmap.md)**:
   * *When to read*: When you need high-level direction on project phases (Days 1–6 blueprint).
   * *Purpose*: Master chronological development guide.
+* **[docs/experiments.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/experiments.md)**:
+  * *When to read*: When designing, running, or analyzing ML model ablation studies, feature engineering tests, or model benchmarks.
+  * *Purpose*: Dedicated register for ML hypotheses, feature specifications, benchmark performance tables, per-milestone breakdowns, and model promotion decisions.
 * **[docs/history.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/history.md)**:
   * *When to read*: When debugging regressions or tracing past changes.
   * *Purpose*: Historical changelog.

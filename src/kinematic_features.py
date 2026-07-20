@@ -280,8 +280,12 @@ def get_milestone_feature_columns(df=None, feature_group="E"):
         cols = base_coords + all_mvp_vels
     elif group == "E":
         cols = base_coords + all_mvp_vels + summary_features
+    elif group == "F":
+        cols = base_coords + upper_vels + summary_features
+    elif group == "G":
+        cols = base_coords + wrist_vels + summary_features
     else:
-        raise ValueError(f"Unknown feature_group '{feature_group}'. Must be A, B, C, D, or E.")
+        raise ValueError(f"Unknown feature_group '{feature_group}'. Must be A, B, C, D, E, F, or G.")
 
     if df is not None:
         missing = [c for c in cols if c not in df.columns]

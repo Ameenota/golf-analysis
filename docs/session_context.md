@@ -43,11 +43,13 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
   - Confirmed the fix by running `scratch/verify_pipeline.py` which evaluated with an overall MAE of **3.26 frames**, and regenerated all 7 holdout reports/videos.
 - Logged the view-dependent DTL handedness check task to `docs/backlog.md`.
 - Implemented `src/kinematic_features.py` adding centered velocity differences and summary motion energy metrics across 12 key MediaPipe landmarks.
-- Developed and executed `scratch/train_kinematic_ablations.py`, evaluating 5 model configurations (A: Base 66 coords, B: Coords + Wrists [72], C: Coords + Upper Body [84], D: Coords + All MVP vels [102], E: Coords + MVP vels + Summaries [108]) across 140 held-out test videos.
-- Experiment E achieved **2.61 frames MAE** (a **14.13% improvement** over the 3.04 baseline) and passed all strict promotion criteria (7/8 milestones improved, Top MAE regression +0.15 frames, Impact MAE improvement -0.24 frames).
-- Promoted Experiment E weights to `models/lstm_phase_model.keras` and saved schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
+- Developed and executed `scratch/train_kinematic_ablations.py`, evaluating 7 model configurations (A through G) across 140 held-out test videos.
+- Experiment E (108 features: Coords + 12 Landmark Velocities + Motion Summaries) achieved **2.66 frames MAE** (a **34.52% improvement** over the 4.07 baseline) and confirmed its status as the winning production standard.
+- Confirmed Experiment E superiority over feature subset combinations: Exp F (Upper-body vels + Summaries [90 features]) achieved 3.06 frames MAE (losing to E due to missing lower-body posture signals), while Exp G (Wrist vels + Summaries [78 features]) regressed to 5.75 frames MAE.
+- Promoted Experiment E weights to `models/lstm_phase_model.keras` and saved winning schema artifacts `models/kinematic_schema.json` and `models/kinematic_config.json`.
 - Integrated dynamic kinematic feature extraction into `analyze_swing.py` for single-video CLI inference.
-- Executed `scratch/verify_pipeline.py` achieving an overall batch pipeline MAE of **2.45 frames** (100% video validation success rate).
+- Logged full experiment details, per-milestone metrics, and promotion decisions in [docs/experiments.md](file:///Users/sagar/Documents/ML/golf-analysis/docs/experiments.md).
+- Executed batch verification test `scratch/verify_pipeline.py` achieving an overall pipeline MAE of **2.41 frames** across 10 test videos (100% pass rate).
 
 
 ---
@@ -71,7 +73,3 @@ We reorganized the workspace documentation, creating a unified `docs/` folder, a
    - Collect both golf and non-golf test videos.
    - Setup a Firebase Storage bucket to host custom ML models and media assets.
    - Develop `src/utils/downloader.py` to automatically fetch and cache missing models and media on demand.
-
-
-
-
