@@ -1,5 +1,6 @@
 # Project History Log
 
+- Disabled `hf-xet` middleware (`HF_HUB_DISABLE_XET=1`) in `scripts/upload_assets_to_hf.py` to ensure robust standard HTTP/LFS commits to Hugging Face Model & Dataset repositories.
 - Built a segregated Streamlit web dashboard in `streamlit_app/` featuring preset demo selectors, 50MB file size validation, fast XGBoost non-golf gatekeeper rejection, and a 3-tab interactive dashboard (Tab 1: Synced Video & Scorecard, Tab 2: Coaching Report & Drills, Tab 3: Interactive Plotly Kinematic Charts).
 - Developed `scripts/upload_assets_to_hf.py` and `src/utils/hf_downloader.py` using `huggingface_hub` for automated uploading and universal local/cloud auto-downloading of ML models (`sagsan/golf-swing-analyzer-models`) and dataset assets (`sagsan/golf-swing-analyzer-dataset`).
 - Packaged 3 pre-computed demo presets (`IMG_0018.MOV`, `IMG_6826.MOV`, `kin-1.mp4`) into `data/sample_presets/` using `scripts/prepare_sample_presets.py`.

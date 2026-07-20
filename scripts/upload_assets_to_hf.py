@@ -2,7 +2,9 @@ import os
 import sys
 import argparse
 from pathlib import Path
-from huggingface_hub import HfApi, create_repo
+from huggingface_hub import HfApi
+
+os.environ["HF_HUB_DISABLE_XET"] = "1"
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -12,25 +14,13 @@ def upload_models(api: HfApi, repo_id: str):
     api.create_repo(repo_id=repo_id, repo_type="model", exist_ok=True)
     
     models_dir = PROJECT_ROOT / "models"
-    files_to_upload = [
-        "lstm_phase_model.keras",
-        "golf_binary_detector.json",
-        "kinematic_schema.json",
-        "kinematic_config.json"
-    ]
-    
-    for fname in files_to_upload:
-        fpath = models_dir / fname
-        if fpath.exists():
-            print(f"  └─ Uploading {fname} ({fpath.stat().st_size / 1e6:.2f} MB)...")
-            api.upload_file(
-                path_or_fileobj=str(fpath),
-                path_in_repo=fname,
-                repo_id=repo_id,
-                repo_type="model"
-            )
-        else:
-            print(f"  ⚠️ Warning: Model file {fpath} not found. Skipping.")
+    if models_dir.exists():
+        print(f"  └─ Uploading models directory...")
+        api.upload_folder(
+            folder_path=str(models_dir),
+            repo_id=repo_id,
+            repo_type="model"
+        )
             
     print("✅ ML models upload complete!\n")
 
